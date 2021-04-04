@@ -18,12 +18,12 @@ run-test:
 	- STAGE=local go test ./...
 
 # Database setup and management for localhost & testing
-POSTGRESQL_URL := 'postgres://postgres:password@localhost:5433/eshop_api?sslmode=disable'
+POSTGRESQL_URL := 'postgres://postgres:password@localhost:5433/micro_ecommerce?sslmode=disable'
 db-create:
 	- migrate -database ${POSTGRESQL_URL} -path ./migrations drop
 
 db-start:
-	- docker-compose up -d
+	- cd build && docker-compose up -d
 
 db-restart:
 	- cd build && docker-compose down && docker-compose up -d

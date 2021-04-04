@@ -99,11 +99,11 @@ func Load(stage string) (Config, error) {
 
 	bytes, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 
 	if err = yaml.Unmarshal(bytes, &c); err != nil {
-		return nil, err
+		return c, err
 	}
 	if c.MainDomain == "" {
 		c.MainDomain = os.Getenv("MAIN_DOMAIN")

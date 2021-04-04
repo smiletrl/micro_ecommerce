@@ -4,8 +4,8 @@ main_domain: "xxx"
 db:
   user: postgres
   password: password
-  name: eshop_api
-  port: 5433
+  name: micro_ecommerce
+  port: 5434
   sslmode: disable
   host: localhost
 cloud:

@@ -1,8 +1,8 @@
 package customer
 
 import (
+	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
-	"github.com/labstack/echo"
 )
 
 // Repository db repository

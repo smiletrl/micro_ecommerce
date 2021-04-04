@@ -2,12 +2,12 @@ package migration
 
 import (
 	"fmt"
-	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/gobuffalo/pop/v5"
+	"github.com/smiletrl/micro_ecommerce/pkg/config"
 )
 
 // MigrateUp does migration
-func MigrateUp(config *config.Config) error {
+func MigrateUp(config config.Config) error {
 	mig, conn := GetMigrator(config)
 	defer conn.Close()
 
@@ -15,7 +15,7 @@ func MigrateUp(config *config.Config) error {
 	return err
 }
 
-func GetMigrator(config *config.Config) (pop.FileMigrator, *pop.Connection) {
+func GetMigrator(config config.Config) (pop.FileMigrator, *pop.Connection) {
 	// default path defined in ./bin/docker-entrypoint.sh
 	migrationPath := "/app/migrations"
 	if config.MigrationPath != "" {
@@ -29,7 +29,7 @@ func GetMigrator(config *config.Config) (pop.FileMigrator, *pop.Connection) {
 	return mig, conn
 }
 
-func getConn(config *config.Config) *pop.Connection {
+func getConn(config config.Config) *pop.Connection {
 	name := config.DB.Name
 	user := config.DB.User
 	pass := config.DB.Password

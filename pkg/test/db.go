@@ -25,7 +25,7 @@ import (
 var (
 	dbpool   *pgxpool.Pool
 	db       *sqlx.DB
-	cfg      *configd.Config
+	cfg      configd.Config
 	migrator pop.FileMigrator
 	m        *migrate.Migrate
 )
@@ -78,22 +78,22 @@ func init() {
 }
 
 // DB returns the db instance
-func DB() (*pgxpool.Pool, *configd.Config, error) {
+func DB() (*pgxpool.Pool, configd.Config, error) {
 	if err := m.Down(); err != nil && err.Error() != "no change" {
-		return nil, nil, err
+		return nil, cfg, err
 	}
 
 	if err := m.Up(); err != nil && err.Error() != "no change" {
-		return nil, nil, err
+		return nil, cfg, err
 	}
 
 	content, err := ioutil.ReadFile("testdata/test_insert.sql")
 	if err != nil {
-		return nil, nil, err
+		return nil, cfg, err
 	}
 
 	if _, err := db.Exec(string(content)); err != nil {
-		return nil, nil, err
+		return nil, cfg, err
 	}
 
 	return dbpool, cfg, nil

@@ -7,10 +7,10 @@ services:
   postgres:
     environment:
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: eshop_api
+      POSTGRES_DB: micro_ecommerce
     image: "postgres:13.1"
     ports:
-      - "5433:5432"
+      - "5434:5432"
 
   adminer:
     image: adminer
