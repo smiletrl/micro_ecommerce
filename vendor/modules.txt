@@ -125,6 +125,7 @@ github.com/jackc/puddle
 github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
 # github.com/joho/godotenv v1.3.0
+## explicit
 github.com/joho/godotenv
 # github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 github.com/kballard/go-shellquote

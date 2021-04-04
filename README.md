@@ -16,8 +16,9 @@
 
 This project is a demo of micro service using kubernetes and istio. It includes services:
 
-Customer
-Cart
-Product
-Order
-Payment
+- Customer
+- Cart
+- Product
+- Order
+- Payment
+

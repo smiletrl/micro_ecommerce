@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -12,6 +13,11 @@ import (
 )
 
 func main() {
+	// provide the .env
+	if err := godotenv.Load(); err != nil {
+		panic(err.Error())
+	}
+
 	// Echo instance
 	e := echo.New()
 	echoGroup := e.Group("api/v1")
@@ -23,8 +29,7 @@ func main() {
 	// initialize service
 	stage := os.Getenv(constants.Stage)
 	if stage == "" {
-		//stage = constants.StageLocal
-		stage = "/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/config/local.yml"
+		stage = constants.StageLocal
 	}
 	config, err := config.Load(stage)
 	if err != nil {
