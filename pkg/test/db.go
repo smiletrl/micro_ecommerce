@@ -3,14 +3,14 @@ package test
 import (
 	"context"
 	"fmt"
-	configd "github.com/smiletrl/micro_ecommerce/pkg/config"
-	contextd "github.com/smiletrl/micro_ecommerce/pkg/context"
 	"github.com/gobuffalo/pop/v5"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	configd "github.com/smiletrl/micro_ecommerce/pkg/config"
+	contextd "github.com/smiletrl/micro_ecommerce/pkg/context"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo"

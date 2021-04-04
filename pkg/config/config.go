@@ -84,7 +84,7 @@ type OSSConfig struct {
 }
 
 // Load returns an application config from the file given the current env
-func Load(stage string) (*Config, error) {
+func Load(stage string) (Config, error) {
 	var file string
 	if !strings.Contains(stage, "/") {
 		file = fmt.Sprintf("./config/%s.yml", stage)
@@ -205,5 +205,5 @@ func Load(stage string) (*Config, error) {
 	// export BASEDIR=$PWD
 	// export STAGE=prod
 
-	return &c, nil
+	return c, nil
 }

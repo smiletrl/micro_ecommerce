@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/smiletrl/micro_ecommerce/pkg/middleware"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 )

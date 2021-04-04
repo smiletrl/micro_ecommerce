@@ -6,11 +6,11 @@ import (
 	"github.com/jackc/pgconn"
 	"os"
 
-	"github.com/smiletrl/micro_ecommerce/pkg/config"
-	"github.com/smiletrl/micro_ecommerce/pkg/migration"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo"
+	"github.com/smiletrl/micro_ecommerce/pkg/config"
+	"github.com/smiletrl/micro_ecommerce/pkg/migration"
 )
 
 // DB adds some wrappers around standard sqlx functionality
@@ -25,7 +25,7 @@ type dbcontext struct {
 }
 
 // InitDB is to inti db
-func InitDB(cfg *config.Config, stage string) (DB, error) {
+func InitDB(cfg config.Config) (DB, error) {
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
 
 	dbpool, err := pgxpool.Connect(context.Background(), connString)

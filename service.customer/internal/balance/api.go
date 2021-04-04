@@ -1,8 +1,8 @@
 package balance
 
 import (
-	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/labstack/echo"
+	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"net/http"
 )
 
@@ -34,7 +34,7 @@ func (r resource) Add(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return errors.BadRequest(c, err)
 	}
-	token, err := r.service.Add(c, req.CustomerID, req.Balance)
+	err := r.service.Add(c, req.CustomerID, req.Balance)
 	if err != nil {
 		return errors.Abort(c, err)
 	}

@@ -1,6 +1,9 @@
 package constants
 
 const (
+	// Stage env
+	Stage string = "stage"
+
 	// StageLocal stage local
 	StageLocal string = "local"
 
