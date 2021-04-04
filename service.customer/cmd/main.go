@@ -23,7 +23,12 @@ func main() {
 	config := config.Load(stage)
 	db := dbcontext.InitDB(config, stage)
 
-	// customer service
+	// balance
+	balanceRepo := balance.NewRepository(db)
+	balanceService := balance.NewService(balanceRepo)
+	balance.RegisterHandlers(echoGroup, balanceService)
+
+	// customer
 	customerRepo := customer.NewRepository(db)
 	customerService := customer.NewService(customerRepo)
 	customer.RegisterHandlers(echoGroup, customerService)
