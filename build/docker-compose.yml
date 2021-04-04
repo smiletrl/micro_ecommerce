@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  # This will host a local postgres version which can be accessible through
+  # localhost or 127.0.0.1
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: eshop_api
+    image: "postgres:13.1"
+    ports:
+      - "5433:5432"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+
+  redis:
+    image: "redis:6.0.9-alpine"
+    restart: always
+    ports:
+      - 6380:6379
+    volumes:
+      - ./redis/config:/docker/config
+      - ./redis/data:/data
+    command: redis-server /docker/config/redis.conf

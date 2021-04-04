@@ -1,0 +1,37 @@
+on: [push]
+name: Test
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13.1
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: ecommerce
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.13
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Test
+        run: STAGE=github go test ./...
+        env:
+          STAGE: github
+          DIGITALYL_DB_NAME: ecommerce
+          DIGITALYL_DB_USER: postgres
+          DIGITALYL_DB_PASS: password
+          DIGITALYL_DB_HOST: localhost
+          DIGITALYL_DB_PORT: 5432
+          DIGITALYL_DB_CONN_STRING: postgres://postgres:password@localhost:5432/ecommerce?sslmode=disable
+          MIGRATION_PATH: ${{ github.workspace }}/migrations
