@@ -11,7 +11,7 @@ type Repository interface {
 	Get(c echo.Context, id int64) (items []cartItem, err error)
 
 	// create new customer
-	Create(c echo.Context, customer_id, product_id int64, stock int) (id int64, err error)
+	Create(c echo.Context, customerID, productID int64, productTitle string, quantity int) (id int64, err error)
 
 	// update customer
 	Update(c echo.Context, id int64, email string) error
@@ -33,7 +33,7 @@ func (r repository) Get(c echo.Context, id int64) (items []cartItem, err error) 
 	return items, err
 }
 
-func (r repository) Create(c echo.Context, customer_id, product_id int64, stock int) (id int64, err error) {
+func (r repository) Create(c echo.Context, customerID, productID int64, productTitle string, quantity int) (id int64, err error) {
 	return id, nil
 }
 

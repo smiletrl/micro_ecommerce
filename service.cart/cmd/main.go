@@ -7,7 +7,9 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
+	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
+	productClient "github.com/smiletrl/micro_ecommerce/service.product/external/client"
 	"os"
 )
 
@@ -41,9 +43,17 @@ func main() {
 
 	// cart
 	cartRepo := cart.NewRepository(db)
-	cartService := cart.NewService(cartRepo)
+	productProxy := product{}
+	cartService := cart.NewService(cartRepo, productProxy)
 	cart.RegisterHandlers(echoGroup, cartService)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":1325"))
+}
+
+// product proxy
+type product struct{}
+
+func (p product) GetDetail(c echo.Context, id int64) (entity.Product, error) {
+	return productClient.GetProduct(id)
 }
