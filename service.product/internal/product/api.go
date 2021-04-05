@@ -1,4 +1,4 @@
-package customer
+package product
 
 import (
 	"github.com/labstack/echo/v4"
@@ -8,19 +8,21 @@ import (
 	"strconv"
 )
 
-// RegisterHandlers for customer
+// Product will not consider sku/attributes.
+
+// RegisterHandlers for product
 func RegisterHandlers(r *echo.Group, service Service) {
 	res := &resource{service}
 
-	customerGroup := r.Group("/customer")
+	productGroup := r.Group("/product")
 
-	customerGroup.GET("/:id", res.Get)
+	productGroup.GET("/:id", res.Get)
 
-	customerGroup.POST("", res.Create)
+	productGroup.POST("", res.Create)
 
-	customerGroup.PUT("/:id", res.Update)
+	productGroup.PUT("/:id", res.Update)
 
-	customerGroup.DELETE("/:id", res.Delete)
+	productGroup.DELETE("/:id", res.Delete)
 }
 
 type resource struct {
@@ -32,7 +34,7 @@ type getRequest struct {
 }
 
 type getResponse struct {
-	Data customer `json:"data"`
+	Data product `json:"data"`
 }
 
 func (r resource) Get(c echo.Context) error {
@@ -43,7 +45,7 @@ func (r resource) Get(c echo.Context) error {
 	}
 	cus, err := r.service.Get(c, idInt64)
 	if err != nil {
-		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error getting customer"), "error getting customer: %s", err.Error()))
+		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error getting product"), "error getting product: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, getResponse{
 		Data: cus,
@@ -51,9 +53,9 @@ func (r resource) Get(c echo.Context) error {
 }
 
 type createRequest struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	Title  string `json:"title"`
+	Amount int    `json:"amount"`
+	Stock  int    `json:"stock"`
 }
 
 type createResponse struct {
@@ -63,11 +65,11 @@ type createResponse struct {
 func (r resource) Create(c echo.Context) error {
 	req := new(createRequest)
 	if err := c.Bind(req); err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error creating request customer"), "error binding creating customer request: %s", err.Error()))
+		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error creating request product"), "error binding creating product request: %s", err.Error()))
 	}
-	id, err := r.service.Create(c, req.Email, req.FirstName, req.LastName)
+	id, err := r.service.Create(c, req.Title, req.Amount, req.Stock)
 	if err != nil {
-		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating customer"), "error creating customer: %s", err.Error()))
+		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating product"), "error creating product: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, createResponse{
 		ID: id,
@@ -75,9 +77,9 @@ func (r resource) Create(c echo.Context) error {
 }
 
 type updateRequest struct {
-	Email     string `db:"email"`
-	FirstName string `db:"first_name"`
-	LastName  string `db:"last_name"`
+	Title  string `json:"title"`
+	Amount int    `json:"amount"`
+	Stock  int    `json:"stock"`
 }
 
 type updateResponse struct {
@@ -90,18 +92,21 @@ func (r resource) Update(c echo.Context) error {
 	if err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
 	}
-
 	req := new(updateRequest)
 	if err := c.Bind(req); err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error updating request customer id"), "error binding updating customer request: %s", err.Error()))
+		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error updating request product id"), "error binding updating product request: %s", err.Error()))
 	}
-	err = r.service.Update(c, idInt64, req.Email, req.FirstName, req.LastName)
+	err = r.service.Update(c, idInt64, req.Title, req.Amount, req.Stock)
 	if err != nil {
-		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error updating customer"), "error updating customer: %s", err.Error()))
+		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error updating product"), "error updating product: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, updateResponse{
 		Data: "ok",
 	})
+}
+
+type deleteRequest struct {
+	ID int64 `json:"id"`
 }
 
 type deleteResponse struct {
@@ -114,10 +119,9 @@ func (r resource) Delete(c echo.Context) error {
 	if err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
 	}
-
 	err = r.service.Delete(c, idInt64)
 	if err != nil {
-		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error deleting customer"), "error deleting customer: %s", err.Error()))
+		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error deleting product"), "error deleting product: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, deleteResponse{
 		Data: "ok",
