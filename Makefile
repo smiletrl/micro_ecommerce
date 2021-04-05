@@ -31,6 +31,9 @@ db-restart:
 db-stop:
 	- docker-compose down
 
+db-reset:
+	- soda reset
+
 migrate-up:
 	- migrate -database ${POSTGRESQL_URL} -path ./migrations up
 
