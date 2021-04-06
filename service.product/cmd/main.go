@@ -7,6 +7,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
+	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/external/server"
 	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
 	"os"
 )
@@ -44,6 +45,11 @@ func main() {
 	productService := product.NewService(productRepo)
 	product.RegisterHandlers(echoGroup, productService)
 
-	// Start server
+	// start grpc server
+	go func() {
+		rpcserver.Register()
+	}()
+
+	// Start rest server
 	e.Logger.Fatal(e.Start(":1324"))
 }
