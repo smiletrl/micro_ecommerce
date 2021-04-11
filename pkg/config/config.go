@@ -87,7 +87,7 @@ type OSSConfig struct {
 func Load(stage string) (Config, error) {
 	var file string
 	if !strings.Contains(stage, "/") {
-		file = fmt.Sprintf("./config/%s.yml", stage)
+		file = fmt.Sprintf("./config/%s.yaml", stage)
 	} else {
 		file = stage
 	}

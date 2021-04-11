@@ -1,26 +1,7 @@
 OURPATH = $(GOPATH)/src/github.com/smiletrl/micro_ecommerce
 
-run-staff:
-	go run ./cmd/staff-admin/main.go
-
-run-miniprogram:
-	go run ./cmd/wechat-miniprogram/main.go
-
-run-docs-staff:
-	# http://localhost:8080/smiletrl/micro_ecommerce/staff/
-	- swag init -g ./cmd/staff-admin/main.go -o ./cmd/staff-admin/docs/ --exclude *_wechat_miniprogram.go
-
-run-docs-miniprogram:
-	# http://localhost:8080/smiletrl/micro_ecommerce/miniprogram/
-	- swag init -g ./cmd/wechat-miniprogram/main.go -o ./cmd/wechat-miniprogram/docs/ --exclude *_staff.go
-
 run-test:
 	- STAGE=local go test ./...
-
-# Database setup and management for localhost & testing
-POSTGRESQL_URL := 'postgres://postgres:password@localhost:5433/micro_ecommerce?sslmode=disable'
-db-create:
-	- migrate -database ${POSTGRESQL_URL} -path ./migrations drop
 
 db-start:
 	- cd build && docker-compose up -d
@@ -34,15 +15,19 @@ db-stop:
 db-reset:
 	- soda reset
 
-migrate-up:
-	- migrate -database ${POSTGRESQL_URL} -path ./migrations up
+build-cart:
+	- docker build -t micro_ecommerce/service_cart:dev . -f service.cart/Dockerfile
+	- docker login
+	- docker tag micro_ecommerce/service_cart:dev smiletrl/micro_ecommerce_cart:dev
+	- docker push smiletrl/micro_ecommerce_cart:dev
 
-migrate-down:
-	- migrate -database ${POSTGRESQL_URL} -path ./migrations down 1
+deploy-cart: build-cart
+	- kubectl rollout restart deployment/cart --namespace=dev
 
-migrate-set5:
-	- migrate -database ${POSTGRESQL_URL} -path ./migrations force 5
+build-customer:
+	- docker build -t micro_ecommerce/service_customer:dev . -f service.customer/Dockerfile
 
-# Need to run this once on the DB to setup migrations before testing
-migrate-reset:
-	- migrate -database ${POSTGRESQL_URL} -path ./migrations drop -f
+build-product:
+	- docker build -t micro_ecommerce/service_product:dev . -f service.product/Dockerfile
+
+local-build: build-cart build-customer build-product
