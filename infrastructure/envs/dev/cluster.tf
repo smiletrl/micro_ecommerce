@@ -1,9 +1,5 @@
 resource "kubernetes_namespace" "env" {
   metadata {
-    annotations = {
-        "lifecycle.cattle.io/create.namespace-auth" = ""
-    }
-
     labels = {
         "istio-injection" = "enabled"
     }
@@ -132,20 +128,19 @@ resource "kubernetes_deployment" "cart" {
             spec {
                 container {
                     name = "cart"
-                    image = "smiletrl/micro_ecommerce_cart:${var.env}"
+                    image = "${var.docker_registry}cart:${var.env}"
                     image_pull_policy = "Always"
 
-/*
                     liveness_probe {
                         http_get {
                             path = "/health"
-                            port = "5000"
+                            port = "1325"
                         }
 
                         initial_delay_seconds = 1
                         period_seconds = 1
                     }
-*/
+
                     env {
                         name = "ENV"
                         value = var.env

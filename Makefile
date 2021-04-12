@@ -31,3 +31,19 @@ build-product:
 	- docker build -t micro_ecommerce/service_product:dev . -f service.product/Dockerfile
 
 local-build: build-cart build-customer build-product
+
+# kind cluster can't be restarted somehow https://github.com/kubernetes-sigs/kind/issues/148
+k8s-start:
+	- kind delete cluster
+	- cd build && kind create cluster --config k8s-kind.yaml
+
+terraform:
+	- cd infrastructure && terraform init
+	- cd infrastructure && terraform apply -target=null_resource.dashboard_download -auto-approve
+	- cd infrastructure && terraform apply -auto-approve
+
+k8s-proxy:
+	- kubectl proxy
+
+k8s-token:
+	- kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"

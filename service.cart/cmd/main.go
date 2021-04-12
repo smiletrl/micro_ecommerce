@@ -3,14 +3,14 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/config"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/config"
+	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external/client"
-	_ "os"
+	"os"
 )
 
 func main() {
@@ -23,19 +23,19 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// initialize service
-	/*
-		stage := os.Getenv(constants.Stage)
-		if stage == "" {
-			stage = constants.StageLocal
-		}
-		config, err := config.Load(stage)
-		if err != nil {
-			panic(err)
-		}*/
-	/*db, err := dbcontext.InitDB(config)
+
+	stage := os.Getenv(constants.Stage)
+	if stage == "" {
+		stage = constants.StageLocal
+	}
+	config, err := config.Load(stage)
 	if err != nil {
 		panic(err)
-	}*/
+	}
+	db, err := dbcontext.InitDB(config)
+	if err != nil {
+		panic(err)
+	}
 
 	db := dbcontext.NewDBContext(nil)
 	healthcheck.RegisterHandlers(e.Group(""), db)
