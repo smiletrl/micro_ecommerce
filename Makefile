@@ -48,6 +48,7 @@ terraform:
 minikube-dashboard:
 	- minikube dashboard
 
-# Start tunnel, i.e, make istio ingressgateway loadbalancer working at IP `127.0.0.1`.
+# Start tunnel, i.e, make istio ingressgateway loadbalancer working at IP `127.0.0.1`, instead of the gateway ip.
+# see more at https://github.com/istio/istio.io/issues/9340
 minikube-loadbalancer:
 	- minikube tunnel
