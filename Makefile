@@ -40,10 +40,8 @@ terraform:
 	- cd infrastructure/envs/dev && terraform apply -auto-approve
 
 # Start kubernetes at https://minikube.sigs.k8s.io/docs/start/
-
 # brew install minikube // minikube version: v1.19.0
 # minikube start
-
 # Download & install istio https://istio.io/latest/docs/setup/getting-started/
 
 # Start dashboard
