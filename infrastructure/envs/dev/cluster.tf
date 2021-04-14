@@ -1,11 +1,28 @@
 resource "kubernetes_namespace" "env" {
   metadata {
     labels = {
-        "istio-injection" = "enabled"
     }
 
     name = var.env
   }
+}
+
+// istio support
+resource "kubectl_manifest" "istio_manifest_gateway" {
+    yaml_body = templatefile("./gateway.yaml",
+        {env = var.env}
+    )
+}
+
+// file virtual_services.yaml includes many items to be created.
+data "kubectl_path_documents" "istio_files_virtual_services" {
+    pattern = "./virtual_services.yaml"
+    vars = {env = var.env}
+}
+
+resource "kubectl_manifest" "istio_manifest_virtual_services" {
+    count = length(data.kubectl_path_documents.istio_files_virtual_services.documents)
+    yaml_body = element(data.kubectl_path_documents.istio_files_virtual_services.documents, count.index)
 }
 
 resource "kubernetes_service" "cart" {
@@ -17,7 +34,6 @@ resource "kubernetes_service" "cart" {
         }
 
         annotations = {
-            "field.cattle.io/publicEndpoints" = ""
         }
 
         namespace = var.env
@@ -29,14 +45,14 @@ resource "kubernetes_service" "cart" {
         }
 
         port {
-            port        = 5000
-            target_port = 5000
+            port        = 1325
+            target_port = 1325
         }
 
         type = "NodePort"
     }
 }
-
+/*
 resource "kubernetes_service" "customer" {
     metadata {
         name = "customer"
@@ -93,7 +109,7 @@ resource "kubernetes_service" "product" {
 
         type = "NodePort"
     }
-}
+}*/
 
 resource "kubernetes_deployment" "cart" {
     metadata {
@@ -147,7 +163,7 @@ resource "kubernetes_deployment" "cart" {
                     }
                     env {
                         name = "STAGE"
-                        value = ""
+                        value = var.stage
                     }
                 }
             }

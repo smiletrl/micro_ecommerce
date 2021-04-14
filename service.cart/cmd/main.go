@@ -16,7 +16,7 @@ import (
 func main() {
 	// Echo instance
 	e := echo.New()
-	echoGroup := e.Group("api/v1")
+	echoGroup := e.Group("/api/v1")
 
 	// Middleware
 	e.Use(middleware.Logger())
@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	db := dbcontext.NewDBContext(nil)
+	//db := dbcontext.NewDBContext(nil)
 	healthcheck.RegisterHandlers(e.Group(""), db)
 
 	// product rpc client. Inject config

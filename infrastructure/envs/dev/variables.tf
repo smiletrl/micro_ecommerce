@@ -5,3 +5,7 @@ variable "env" {
 variable "docker_registry" {
     type = string
 }
+
+variable "stage" {
+    type = string
+}

@@ -18,8 +18,8 @@ db-reset:
 build-cart:
 	- docker build -t micro_ecommerce/service_cart:dev . -f service.cart/Dockerfile
 	- docker login
-	- docker tag micro_ecommerce/service_cart:dev smiletrl/micro_ecommerce_cart:dev
-	- docker push smiletrl/micro_ecommerce_cart:dev
+	- docker tag micro_ecommerce/service_cart:dev docker.io/smiletrl/micro_ecommerce_cart:dev
+	- docker push docker.io/smiletrl/micro_ecommerce_cart:dev
 
 deploy-cart: build-cart
 	- kubectl rollout restart deployment/cart --namespace=dev
@@ -32,18 +32,18 @@ build-product:
 
 local-build: build-cart build-customer build-product
 
-# kind cluster can't be restarted somehow https://github.com/kubernetes-sigs/kind/issues/148
-k8s-start:
-	- kind delete cluster
-	- cd build && kind create cluster --config k8s-kind.yaml
-
 terraform:
 	- cd infrastructure && terraform init
 	- cd infrastructure && terraform apply -target=null_resource.dashboard_download -auto-approve
 	- cd infrastructure && terraform apply -auto-approve
+	- cd infrastructure/envs/dev && terraform init
+	- cd infrastructure/envs/dev && terraform apply -auto-approve
 
-k8s-proxy:
-	- kubectl proxy
+# Start kubernetes at https://minikube.sigs.k8s.io/docs/start/
+# brew install minikube // minikube version: v1.19.0
+# minikube start
+minikube-dashboard:
+	- minikube dashboard
 
-k8s-token:
-	- kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
+minikube-loadbalancer:
+	- minikube tunnel
