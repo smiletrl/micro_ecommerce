@@ -21,10 +21,8 @@ WORKDIR /app
 COPY --from=builder /usr/local/go/lib/time/zoneinfo.zip /zoneinfo.zip
 ENV ZONEINFO /zoneinfo.zip
 
-COPY --from=builder /build/config/prod.yaml /build/config/prod.yaml
+COPY --from=builder /build/config /app/config
 COPY --from=builder /build/service-customer /app/service-customer
 COPY --from=builder /build/migrations /app/migrations
-
-EXPOSE 5000
 
 CMD ["./service-customer"]

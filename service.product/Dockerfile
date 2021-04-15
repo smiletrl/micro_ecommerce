@@ -1,6 +1,5 @@
 FROM golang:1.16.3-alpine3.13 as builder
 
-
 RUN go env -w GO111MODULE=on
 
 # For china proxy
@@ -21,10 +20,8 @@ WORKDIR /app
 COPY --from=builder /usr/local/go/lib/time/zoneinfo.zip /zoneinfo.zip
 ENV ZONEINFO /zoneinfo.zip
 
-COPY --from=builder /build/config/prod.yaml /build/config/prod.yaml
+COPY --from=builder /build/config /app/config
 COPY --from=builder /build/service-product /app/service-product
 COPY --from=builder /build/migrations /app/migrations
-
-EXPOSE 5000
 
 CMD ["./service-product"]

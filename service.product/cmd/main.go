@@ -7,15 +7,15 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
-	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/external/server"
 	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
+	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/server"
 	"os"
 )
 
 func main() {
 	// Echo instance
 	e := echo.New()
-	echoGroup := e.Group("api/v1")
+	echoGroup := e.Group("/api/v1")
 
 	// Middleware
 	e.Use(middleware.Logger())
@@ -48,5 +48,5 @@ func main() {
 	}()
 
 	// Start rest server
-	e.Logger.Fatal(e.Start(":1324"))
+	e.Logger.Fatal(e.Start(constants.RestPort))
 }

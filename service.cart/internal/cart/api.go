@@ -3,7 +3,6 @@ package cart
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"net/http"
 	"strconv"
@@ -27,12 +26,12 @@ type resource struct {
 }
 
 type createRequest struct {
-	Quantity  int   `db:"quantity"`
-	ProductID int64 `db:"product_id"`
+	Quantity int   `json:"quantity"`
+	SKUID    int64 `json:"sku_id"`
 }
 
 type createResponse struct {
-	ID int64 `json:"id"`
+	cartItem
 }
 
 func (r resource) Get(c echo.Context) error {
@@ -42,20 +41,20 @@ func (r resource) Get(c echo.Context) error {
 func (r resource) Create(c echo.Context) error {
 	req := new(createRequest)
 	if err := c.Bind(req); err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error creating request customer"), "error binding creating customer request: %s", err.Error()))
+		return errorsd.BadRequest(c, err)
 	}
 	fmt.Printf("req is: %+v\n", req)
+
+	// @todo get customer id from middleware/context.
 	customerID := int64(12)
 
-	// get the product title, price, stock -- they could be retrieved from service product.
-	// RPC call to service product.
-	id, err := r.service.Create(c, customerID, req.ProductID, req.Quantity)
-	return c.String(http.StatusOK, "succeed!")
+	// RPC call to service product to get the product sku title, price, stock
+	cart, err := r.service.Create(c, customerID, req.SKUID, req.Quantity)
 	if err != nil {
-		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating customer"), "error creating customer: %s", err.Error()))
+		return errorsd.Abort(c, err)
 	}
 	return c.JSON(http.StatusOK, createResponse{
-		ID: id,
+		cartItem: cart,
 	})
 }
 
@@ -67,12 +66,12 @@ func (r resource) Delete(c echo.Context) error {
 	id := c.Param("id")
 	idInt64, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
+		return errorsd.BadRequest(c, err)
 	}
 
 	err = r.service.Delete(c, idInt64)
 	if err != nil {
-		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error deleting customer"), "error deleting customer: %s", err.Error()))
+		return errorsd.Abort(c, err)
 	}
 	return c.JSON(http.StatusOK, deleteResponse{
 		Data: "ok",

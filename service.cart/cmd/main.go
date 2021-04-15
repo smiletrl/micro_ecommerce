@@ -9,7 +9,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
-	productClient "github.com/smiletrl/micro_ecommerce/service.product/external/client"
+	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
 	"os"
 )
 
@@ -40,14 +40,7 @@ func main() {
 	//db := dbcontext.NewDBContext(nil)
 	healthcheck.RegisterHandlers(e.Group(""), db)
 
-	// product rpc client. Inject config
-	// this client depends on the product rpc server. Maybe Build the client
-	// on needed basis. When the client call is required, initialize the
-	// client connection.
-	// Or build the connection on the product package?
-	// @todo test the connection. terminate the rpc server, and then reenable it, and see if it works
-	// I assume this cart service needs restart too.
-	// The connection should be built on product side
+	// Product rpc client. Inject config
 	pclient := productClient.NewClient()
 
 	// cart
@@ -57,7 +50,7 @@ func main() {
 	cart.RegisterHandlers(echoGroup, cartService)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":1325"))
+	e.Logger.Fatal(e.Start(constants.RestPort))
 }
 
 // product proxy
@@ -65,6 +58,6 @@ type product struct {
 	client productClient.Client
 }
 
-func (p product) GetDetail(c echo.Context, id int64) (entity.Product, error) {
-	return p.client.GetProduct(id)
+func (p product) GetSKU(c echo.Context, skuID int64) (entity.SKU, error) {
+	return p.client.GetSKU(skuID)
 }

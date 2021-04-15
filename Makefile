@@ -26,9 +26,15 @@ deploy-cart: build-cart
 
 build-customer:
 	- docker build -t micro_ecommerce/service_customer:dev . -f service.customer/Dockerfile
+	- docker login
+	- docker tag micro_ecommerce/service_customer:dev docker.io/smiletrl/micro_ecommerce_customer:dev
+	- docker push docker.io/smiletrl/micro_ecommerce_customer:dev
 
 build-product:
 	- docker build -t micro_ecommerce/service_product:dev . -f service.product/Dockerfile
+	- docker login
+	- docker tag micro_ecommerce/service_product:dev docker.io/smiletrl/micro_ecommerce_product:dev
+	- docker push docker.io/smiletrl/micro_ecommerce_product:dev
 
 local-build: build-cart build-customer build-product
 
@@ -52,3 +58,8 @@ minikube-dashboard:
 # see more at https://github.com/istio/istio.io/issues/9340
 minikube-loadbalancer:
 	- minikube tunnel
+
+# gRPC compile command at directory `service.product/internal/rpc/proto`.
+#protoc --go_out=. --go_opt=paths=source_relative \
+#    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+#    proto/product.proto

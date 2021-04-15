@@ -33,9 +33,6 @@ resource "kubernetes_service" "cart" {
             app = "cart"
         }
 
-        annotations = {
-        }
-
         namespace = var.env
     }
 
@@ -52,17 +49,13 @@ resource "kubernetes_service" "cart" {
         type = "NodePort"
     }
 }
-/*
+
 resource "kubernetes_service" "customer" {
     metadata {
         name = "customer"
 
         labels = {
             app = "customer"
-        }
-
-        annotations = {
-            "field.cattle.io/publicEndpoints" = ""
         }
 
         namespace = var.env
@@ -74,8 +67,8 @@ resource "kubernetes_service" "customer" {
         }
 
         port {
-            port        = 5000
-            target_port = 5000
+            port        = 1325
+            target_port = 1325
         }
 
         type = "NodePort"
@@ -90,10 +83,6 @@ resource "kubernetes_service" "product" {
             app = "product"
         }
 
-        annotations = {
-            "field.cattle.io/publicEndpoints" = ""
-        }
-
         namespace = var.env
     }
 
@@ -103,13 +92,20 @@ resource "kubernetes_service" "product" {
         }
 
         port {
-            port        = 5000
-            target_port = 5000
+            name        = "rest-api"
+            port        = 1325
+            target_port = 1325
+        }
+
+        port {
+            name        = "grpc"
+            port        = 50051
+            target_port = 50051
         }
 
         type = "NodePort"
     }
-}*/
+}
 
 resource "kubernetes_deployment" "cart" {
     metadata {
@@ -177,13 +173,11 @@ resource "kubernetes_deployment" "cart" {
     }
 }
 
-/*
 resource "kubernetes_deployment" "customer" {
     metadata {
         name = "customer"
 
         annotations = {
-            "field.cattle.io/publicEndpoints" = ""
         }
 
         namespace = var.env
@@ -192,7 +186,7 @@ resource "kubernetes_deployment" "customer" {
     spec {
         progress_deadline_seconds = 6000
 
-        replicas = 3
+        replicas = 2
 
         selector {
             match_labels = {
@@ -212,13 +206,13 @@ resource "kubernetes_deployment" "customer" {
             spec {
                 container {
                     name = "customer"
-                    image = "${var.docker_registry}/service_customer:${var.env}"
+                    image = "${var.docker_registry}customer:${var.env}"
                     image_pull_policy = "Always"
 
                     liveness_probe {
                         http_get {
                             path = "/health"
-                            port = "5000"
+                            port = "1325"
                         }
 
                         initial_delay_seconds = 1
@@ -230,23 +224,17 @@ resource "kubernetes_deployment" "customer" {
                         value = var.env
                     }
                     env {
-                        name = "DB_HOST"
-                        value = "127.0.0.1"
+                        name = "STAGE"
+                        value = var.stage
                     }
                 }
             }
         }
     }
 
-    lifecycle {
-        ignore_changes = [
-            metadata[0].annotations["field.cattle.io/publicEndpoints"]
-        ]
-    }
-
     timeouts {
-        create = "1h"
-        update = "1h"
+        create = "10m"
+        update = "10m"
         delete = "10m"
     }
 }
@@ -256,7 +244,6 @@ resource "kubernetes_deployment" "product" {
         name = "product"
 
         annotations = {
-            "field.cattle.io/publicEndpoints" = ""
         }
 
         namespace = var.env
@@ -265,7 +252,7 @@ resource "kubernetes_deployment" "product" {
     spec {
         progress_deadline_seconds = 6000
 
-        replicas = 3
+        replicas = 2
 
         selector {
             match_labels = {
@@ -285,13 +272,13 @@ resource "kubernetes_deployment" "product" {
             spec {
                 container {
                     name = "product"
-                    image = "${var.docker_registry}/service_product:${var.env}"
+                    image = "${var.docker_registry}product:${var.env}"
                     image_pull_policy = "Always"
 
                     liveness_probe {
                         http_get {
                             path = "/health"
-                            port = "5000"
+                            port = "1325"
                         }
 
                         initial_delay_seconds = 1
@@ -303,23 +290,17 @@ resource "kubernetes_deployment" "product" {
                         value = var.env
                     }
                     env {
-                        name = "DB_HOST"
-                        value = "127.0.0.1"
+                        name = "STAGE"
+                        value = var.stage
                     }
                 }
             }
         }
     }
 
-    lifecycle {
-        ignore_changes = [
-            metadata[0].annotations["field.cattle.io/publicEndpoints"]
-        ]
-    }
-
     timeouts {
-        create = "1h"
-        update = "1h"
+        create = "10m"
+        update = "10m"
         delete = "10m"
     }
-}*/
+}

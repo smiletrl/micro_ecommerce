@@ -15,7 +15,7 @@ import (
 func main() {
 	// Echo instance
 	e := echo.New()
-	echoGroup := e.Group("api/v1")
+	echoGroup := e.Group("/api/v1")
 
 	// Middleware
 	e.Use(middleware.Logger())
@@ -48,5 +48,5 @@ func main() {
 	customer.RegisterHandlers(echoGroup, customerService)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(constants.RestPort))
 }

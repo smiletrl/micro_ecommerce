@@ -4,7 +4,6 @@
 - [Go Standard Layout](https://github.com/golang-standards/project-layout)
 - [Micro Service Concept](https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview-microservices)
 
-
 ## Technical Stack
 - [Golang >= 1.14](https://golang.org/)
 - [PostgreSQL](https://www.postgresql.org/)

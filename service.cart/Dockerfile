@@ -25,6 +25,4 @@ COPY --from=builder /build/config /app/config
 COPY --from=builder /build/service-cart /app/service-cart
 COPY --from=builder /build/migrations /app/migrations
 
-EXPOSE 5000
-
 CMD ["./service-cart"]
