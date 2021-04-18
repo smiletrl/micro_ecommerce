@@ -10,6 +10,7 @@
 - [MiniKube](https://minikube.sigs.k8s.io/docs/start/)
 - [Kubernetes](https://kubernetes.io/)
 - [Istio](https://istio.io/)
+- [Terraform](https://www.terraform.io/)
 - [RocketMQ](https://rocketmq.apache.org/)
 
 ### Background
