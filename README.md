@@ -17,7 +17,7 @@ This repo shows a simple ecommerce app running based on micro service architectu
 
 For people who are new but interested in micro service, this repo is supposed to provide basic usage for items:
 
-- Kubernetes & Istio for service register, discovery and more mico service features.
+- Kubernetes & Istio for service register, discovery and more micro service features.
 - gRPC for sync communication between micro services to provide low latency internal service response.
 - RocketMQ for async communication to decouple services to focus on individual service development.
 - Terraform configuration for local development & deployment. It's supposed to be easily to be migrated to an online cloud environment, such as AWS.

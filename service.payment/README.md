@@ -1,5 +1,5 @@
 ## Payment
-Payment produces message to RocketMQ queue to notify other services. It used database postgresSQL.
+Payment produces message to RocketMQ queue to notify other services. It uses database postgresSQL.
 
 It includes following scenarios at this moment.
 - tell order service to update order status.

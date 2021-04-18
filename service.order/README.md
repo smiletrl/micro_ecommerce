@@ -3,4 +3,4 @@ Order subscribes to RocketMQ queue to update order status when a payment is succ
 
 See more at `func Consume() error` from `internal/order/message.go`.
 
-It used database postgresSQL.
+It uses database postgresSQL.
