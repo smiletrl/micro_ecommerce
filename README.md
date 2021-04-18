@@ -24,15 +24,31 @@ For people who are new but interested in micro serice, this repo is supposed to 
 5. Detailed documentation is on the way^
 
 ### Services
-Services include
+Services include following at this moment. Different service might use different database & different language. Right now, Golang is the only language, but python, nodejs or vuejs might be picked for later service, such as analytical, frontend services.
 
-- [Customer]()
-- Cart
-- Product
-- Order
-- Payment
+Three databases are used at this moment, Redis, PostgresSQL, MongoDB(to be implemented).
 
-### Local Installment
+Check below links for service details. These services are not complete now, but should provide a basic idea on the way. More is coming^
+
+- [Customer](https://github.com/smiletrl/micro_ecommerce/tree/master/service.customer)
+- [Cart](https://github.com/smiletrl/micro_ecommerce/tree/master/service.cart)
+- [Product](https://github.com/smiletrl/micro_ecommerce/tree/master/service.product)
+- [Order](https://github.com/smiletrl/micro_ecommerce/tree/master/service.order)
+- [Payment](https://github.com/smiletrl/micro_ecommerce/tree/master/service.payment)
+
+### Local Installment, development & deployment
+- Install [Docker](https://www.docker.com/)
+- Install [minikube](https://minikube.sigs.k8s.io/docs/start/) (minikube version: v1.19.0 in my mac). After successful installment, start it with command `minikube start` and  enable tunnel with command `minilube tunnel` for load balance. Also, command `minikube dashboard` could be used to enable dashbaord to visiually view kubernetes service & configurations. If you have played with kubernetes before, you might have file `~/.kube/config` already. To make it simple, mv this config file with a different name before minikube installment, such as `mv ~/.kube/config ~/.kube/config-backup`.
+- Install [Istio](https://istio.io/latest/docs/setup/getting-started/) (client version: 1.9.2 in my mac)
+- Install [Terraform](https://www.terraform.io/) (Terraform v0.14.7 in my mac)
+- Install [RocketMQ](https://rocketmq.apache.org/docs/quick-start/) (version 4.8.0 in my mac). Note, this version only work with JDK 1.8. Choose this jdk version [in mac](https://mkyong.com/java/how-to-set-java_home-environment-variable-on-mac-os-x/). If you want to use JDK1.9+, more adjustment is required. See [issue](https://github.com/apache/rocketmq/issues/2553). The two commands might also be required for installment `mkdir -p ~/store/commitlog/`, `mkdir -p ~/store/consumequeue/`.
+- Install local postgresSQL with command `make db-start`. This will install a local postgresSQL version through docker.
+- Create an account at docker.io(https://hub.docker.com/) if you don't have an account already. Create repositories, such as `docker.io/smiletrl/micro_ecommerce_customer` for customer service defined at this project. Replace `smiletrl` with your own account name. Create other repositories like customer services at hub.docker.com. Then try to replace `docker.io/smiletrl/micro_ecommerce_xxx` with `docker.io/{Your_account_name}/micro_ecommerce_xxx` at `/Mikefile`.
+- Upload local services docker images to docker.io. For example, to upload cart service, run command `make build-cart`. Use similar strategy for other services to upload service docker image to docker.io. Some service might be missing in makefile for build, play with it and see how it works^.
+- Copy content from `/infrastructure/envs/dev/terraform.tfvars.example` to `/infrastructure/envs/dev/terraform.tfvars`, and replace content `smiletrl` with your own docker hub account name in the tfvars file.
+- After above components are set up and running, run command `make terraform`. For online environment, use aws s3 bucket or similar service for remote state. Here, we simply use local state file for local development. If all goes well, this command with terraform will deploy local services to local minikube. You may see these services & their pods in namespace `dev` in minikube dashboard, or through kubectl. To verify this is working, open `http://127.0.0.1/api/v1/cart_item` in your browser, if you see `succeed!` in the browser, you are successful!
+- Local development can also happen without kubernetes. For example, run `STAGE=/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/config/local.yaml go run service.product/cmd/main.go` to start local product service. Replace `/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/config/local.yaml` with your local path to this local yaml file. Then the service is available at `http:127.0.0.1:1325`.
+- After code changes in service cart, to deploy the change to local kubernetes, use command `make deploy-cart`. Use similar strategy to deploy other services to kubernetes.
 
 ### Project Structure
 

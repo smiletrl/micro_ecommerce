@@ -40,7 +40,6 @@ local-build: build-cart build-customer build-product
 
 terraform:
 	- cd infrastructure && terraform init
-	- cd infrastructure && terraform apply -target=null_resource.dashboard_download -auto-approve
 	- cd infrastructure && terraform apply -auto-approve
 	- cd infrastructure/envs/dev && terraform init
 	- cd infrastructure/envs/dev && terraform apply -auto-approve
