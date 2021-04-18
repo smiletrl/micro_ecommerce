@@ -16,14 +16,14 @@ const (
 
 // Config is the type used for storing configurations
 type Config struct {
-	Version string
-	BaseDir string `yaml:"base_dir"`
-	// like `digitalyl.com`
+	Version                         string
+	BaseDir                         string `yaml:"base_dir"`
 	MainDomain                      string `yaml:"main_domain"`
 	DBConnString                    string `yaml:"db_conn_string"`
 	DB                              DBConfig
 	Cloud                           CloudConfig
 	Redis                           RedisConfig
+	RocketMQ                        RocketMQConfig
 	Stage                           string
 	ServicePort                     string `yaml:"service_port"`
 	JwtSecret                       string `yaml:"jwt_secret"`
@@ -50,6 +50,12 @@ type RedisConfig struct {
 	Endpoint string
 	Password string
 	Port     string
+}
+
+type RocketMQConfig struct {
+	Host           string
+	NameServerPort string
+	BrokenPort     string
 }
 
 // CloudConfig is cloud config
@@ -85,12 +91,14 @@ type OSSConfig struct {
 
 // Load returns an application config from the file given the current env
 func Load(stage string) (Config, error) {
+	fmt.Printf("stage is: %+v\n", stage)
 	var file string
 	if !strings.Contains(stage, "/") {
 		file = fmt.Sprintf("./config/%s.yaml", stage)
 	} else {
 		file = stage
 	}
+	fmt.Printf("file is: %+v\n", file)
 
 	c := Config{
 		ServicePort: servicePort,
@@ -158,6 +166,16 @@ func Load(stage string) (Config, error) {
 	}
 	if c.Redis.Port == "" {
 		c.Redis.Port = os.Getenv("REDIS_PORT")
+	}
+	// rocketmq
+	if c.RocketMQ.Host == "" {
+		c.RocketMQ.Host = os.Getenv("ROCKETMQ_HOST")
+	}
+	if c.RocketMQ.NameServerPort == "" {
+		c.RocketMQ.NameServerPort = os.Getenv("ROCKETMQ_NAME_SERVER_PORT")
+	}
+	if c.RocketMQ.BrokenPort == "" {
+		c.RocketMQ.BrokenPort = os.Getenv("ROCKETMQ_BROKER_PORT")
 	}
 	// jenkins
 	if c.Jenkins.Endpoint == "" {

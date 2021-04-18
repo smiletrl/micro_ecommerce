@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -8,6 +9,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
+	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
 	"os"
@@ -25,6 +27,7 @@ func main() {
 	// initialize service
 
 	stage := os.Getenv(constants.Stage)
+	fmt.Printf("initial stage is: %+v\n", stage)
 	if stage == "" {
 		stage = constants.StageLocal
 	}
@@ -37,7 +40,8 @@ func main() {
 		panic(err)
 	}
 
-	//db := dbcontext.NewDBContext(nil)
+	rocketmq.Start()
+
 	healthcheck.RegisterHandlers(e.Group(""), db)
 
 	// Product rpc client. Inject config

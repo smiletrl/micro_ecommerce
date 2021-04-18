@@ -8,6 +8,10 @@ db:
   port: 5434
   sslmode: disable
   host: minikube-host.default.svc.cluster.local
+rocketmq:
+  host: minikube-host.default.svc.cluster.local
+  name_server_port: 9876
+  broker_port: 10911
 cloud:
   endpoint: "https://ss.com"
   token: "xxx"

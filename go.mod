@@ -3,13 +3,13 @@ module github.com/smiletrl/micro_ecommerce
 go 1.14
 
 require (
+	github.com/apache/rocketmq-client-go/v2 v2.1.0
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/gobuffalo/pop/v5 v5.3.1
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jackc/pgconn v1.8.0
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jmoiron/sqlx v1.2.0
-	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/pkg/errors v0.9.1
