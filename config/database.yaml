@@ -1,7 +1,0 @@
-development:
-  dialect: "postgres"
-  database: {{ env "DIGITALYL_DB_NAME" }}
-  host: {{ env "DIGITALYL_DB_HOST" }}
-  port: {{ env "DIGITALYL_DB_PORT" }}
-  user: {{ env "DIGITALYL_DB_USER" }}
-  password: {{ env "DIGITALYL_DB_PASS" }}
