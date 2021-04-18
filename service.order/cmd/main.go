@@ -7,15 +7,14 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
-	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
-	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/server"
+	"github.com/smiletrl/micro_ecommerce/service.order/internal/order"
 	"os"
 )
 
 func main() {
 	// Echo instance
 	e := echo.New()
-	echoGroup := e.Group("/api/v1")
+	//echoGroup := e.Group("/api/v1")
 
 	// Middleware
 	e.Use(middleware.Logger())
@@ -37,21 +36,9 @@ func main() {
 
 	healthcheck.RegisterHandlers(e.Group(""), db)
 
-	// product
-	productRepo := product.NewRepository(db)
-	productService := product.NewService(productRepo)
-	product.RegisterHandlers(echoGroup, productService)
-
-	err = product.Consume()
+	// rocketMQ message
+	err = order.Consume()
 	if err != nil {
 		panic(err)
 	}
-
-	// start grpc server
-	go func() {
-		rpcserver.Register()
-	}()
-
-	// Start rest server
-	e.Logger.Fatal(e.Start(constants.RestPort))
 }

@@ -42,6 +42,11 @@ func main() {
 	balanceService := balance.NewService(balanceRepo)
 	balance.RegisterHandlers(echoGroup, balanceService)
 
+	err = balance.Consume()
+	if err != nil {
+		panic(err)
+	}
+
 	// customer
 	customerRepo := customer.NewRepository(db)
 	customerService := customer.NewService(customerRepo)

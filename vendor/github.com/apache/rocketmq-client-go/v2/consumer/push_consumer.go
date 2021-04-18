@@ -514,7 +514,6 @@ func (pc *pushConsumer) validate() {
 }
 
 func (pc *pushConsumer) pullMessage(request *PullRequest) {
-	fmt.Printf("rulin 5 is:%+v\n", pc.model)
 	rlog.Debug("start a new Pull Message task for PullRequest", map[string]interface{}{
 		rlog.LogKeyPullRequest: request.String(),
 	})

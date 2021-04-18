@@ -6,11 +6,9 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
-	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
-	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
-	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
+	"github.com/smiletrl/micro_ecommerce/service.payment/internal/payment"
 	"os"
 )
 
@@ -25,7 +23,6 @@ func main() {
 
 	// initialize service
 	stage := os.Getenv(constants.Stage)
-	stage = "/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/config/local.yaml"
 	if stage == "" {
 		stage = constants.StageLocal
 	}
@@ -38,28 +35,14 @@ func main() {
 		panic(err)
 	}
 
-	rocketmq.Start()
-
 	healthcheck.RegisterHandlers(e.Group(""), db)
 
-	// Product rpc client. Inject config
-	pclient := productClient.NewClient()
+	paymentRepo := payment.NewRepository(db)
+	paymentService := payment.NewService(paymentRepo)
 
-	// cart
-	cartRepo := cart.NewRepository(db)
-	productProxy := product{pclient}
-	cartService := cart.NewService(cartRepo, productProxy)
-	cart.RegisterHandlers(echoGroup, cartService)
+	rocketMQService := rocketmq.NewService()
+	payment.RegisterHandlers(echoGroup, paymentService, rocketMQService)
 
-	// Start server
+	// Start rest server
 	e.Logger.Fatal(e.Start(constants.RestPort))
-}
-
-// product proxy
-type product struct {
-	client productClient.Client
-}
-
-func (p product) GetSKU(c echo.Context, skuID int64) (entity.SKU, error) {
-	return p.client.GetSKU(skuID)
 }

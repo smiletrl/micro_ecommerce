@@ -180,6 +180,12 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v2.0.3+incompatible
 github.com/mattn/go-sqlite3
+# github.com/medivhzhan/weapp v1.5.1
+## explicit
+github.com/medivhzhan/weapp
+github.com/medivhzhan/weapp/payment
+github.com/medivhzhan/weapp/util
+github.com/medivhzhan/weapp/util/ecb
 # github.com/microcosm-cc/bluemonday v1.0.2
 github.com/microcosm-cc/bluemonday
 # github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421
