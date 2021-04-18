@@ -12,29 +12,9 @@ rocketmq:
   host: minikube-host.default.svc.cluster.local
   name_server_port: 9876
   broker_port: 10911
-cloud:
-  endpoint: "https://ss.com"
-  token: "xxx"
 redis:
   endpoint: "127.0.0.1"
   password: "123456"
   port: "6380"
-jenkins:
-  endpoint: "https://xxx.com/"
-  token: "test_token"
-  user: "xxx"
-  password: "yyy"
-aliyun:
-  rds_db_instance_id: "xxx"
-  access_key_id: "xxx"
-  access_key_secret: "xxx"
-  region: "xxx"
 jwt_secret: "xxx"
 migration_path: "/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/migrations"
-backend_individual_project_key: "http://xx.com/key"
-frontend_individual_project_key: "http://xx.com/key"
-oss:
-  bucket_name: "xxx"
-  endpoint: "xxxx"
-  access_key_id: "xxx"
-  access_key_secret: "xxx"

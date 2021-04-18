@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -25,9 +24,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// initialize service
-
 	stage := os.Getenv(constants.Stage)
-	fmt.Printf("initial stage is: %+v\n", stage)
 	if stage == "" {
 		stage = constants.StageLocal
 	}
