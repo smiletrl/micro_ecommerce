@@ -9,11 +9,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Default config values
-const (
-	servicePort = "1323"
-)
-
 // Config is the type used for storing configurations
 type Config struct {
 	Version       string
@@ -25,7 +20,6 @@ type Config struct {
 	Redis         RedisConfig
 	RocketMQ      RocketMQConfig
 	Stage         string
-	ServicePort   string `yaml:"service_port"`
 	JwtSecret     string `yaml:"jwt_secret"`
 	MigrationPath string `yaml:"migration_path"`
 }
@@ -86,18 +80,15 @@ type OSSConfig struct {
 
 // Load returns an application config from the file given the current env
 func Load(stage string) (Config, error) {
-	fmt.Printf("stage is: %+v\n", stage)
 	var file string
 	if !strings.Contains(stage, "/") {
 		file = fmt.Sprintf("./config/%s.yaml", stage)
 	} else {
 		file = stage
 	}
-	fmt.Printf("file is: %+v\n", file)
 
 	c := Config{
-		ServicePort: servicePort,
-		Stage:       stage,
+		Stage: stage,
 	}
 
 	bytes, err := ioutil.ReadFile(file)
@@ -133,9 +124,6 @@ func Load(stage string) (Config, error) {
 	if c.JwtSecret == "" {
 		c.JwtSecret = os.Getenv("JWT_SECRET")
 	}
-	if c.ServicePort == "" {
-		c.ServicePort = os.Getenv("DIGITALYL_SERVICE_PORT")
-	}
 	if c.MigrationPath == "" {
 		c.MigrationPath = os.Getenv("MIGRATION_PATH")
 	}
@@ -166,9 +154,6 @@ func Load(stage string) (Config, error) {
 	if c.RocketMQ.BrokenPort == "" {
 		c.RocketMQ.BrokenPort = os.Getenv("ROCKETMQ_BROKER_PORT")
 	}
-	// Extra two env vars are needed for online server.
-	// export BASEDIR=$PWD
-	// export STAGE=prod
 
 	return c, nil
 }
