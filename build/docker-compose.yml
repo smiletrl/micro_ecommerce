@@ -27,3 +27,12 @@ services:
       - ./redis/config:/docker/config
       - ./redis/data:/data
     command: redis-server /docker/config/redis.conf
+
+  mongoDB:
+    image: "mongo:4.4.5"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27018:27017
