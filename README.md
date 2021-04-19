@@ -46,8 +46,8 @@ Check below links for service details. These services are not complete now, but 
 - Install local postgresSQL with command `make db-start`. This will install a local postgresSQL version through docker.
 - Create an account at docker.io(https://hub.docker.com/) if you don't have an account already. Create repositories, such as `docker.io/smiletrl/micro_ecommerce_customer` for customer service defined at this project. Replace `smiletrl` with your own account name. Create other repositories like customer services at hub.docker.com. Then try to replace `docker.io/smiletrl/micro_ecommerce_xxx` with `docker.io/{Your_account_name}/micro_ecommerce_xxx` at `/Mikefile`.
 - Upload local services docker images to docker.io. For example, to upload cart service, run command `make build-cart`. Use similar strategy for other services to upload service docker image to docker.io. Some service might be missing in makefile for build, play with it and see how it works^.
-- Copy content from `/infrastructure/envs/dev/terraform.tfvars.example` to `/infrastructure/envs/dev/terraform.tfvars`, and replace content `smiletrl` with your own docker hub account name in the tfvars file.
-- Run command `minikube ssh 'grep host.minikube.internal /etc/hosts | cut -f1'` to get ip for local host in your local machine. Then replace the ip value `ip = "192.168.65.2"` with your local ip at file `infrastructure/host.tf`.
+- Copy content from `/infrastructure/local/envs/dev/terraform.tfvars.example` to `/infrastructure/local/envs/dev/terraform.tfvars`, and replace content `smiletrl` with your own docker hub account name in the tfvars file.
+- Copy content from `/infrastructure/local/terraform.tfvars.example` to `/infrastructure/local/terraform.tfvars`. Run command `minikube ssh 'grep host.minikube.internal /etc/hosts | cut -f1'` to get minikube ssh instance ip for local host in your local machine. Then replace the ip_host value `"192.168.65.2"` with your own ip from minikube ssh instance in the new tfvars file.
 - After above components are set up and running, run command `make terraform`. For online environment, use aws s3 bucket or similar service for remote state. Here, we simply use local state file for local development. If all goes well, this command with terraform will deploy local services to local minikube. You may see these services & their pods in namespace `dev` in minikube dashboard, or through kubectl. To verify this is working, open `http://127.0.0.1/api/v1/cart_item` in your browser, if you see `succeed!` in the browser, you are successful!
 - Local development can also happen without kubernetes. For example, run `STAGE=/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/config/local.yaml go run service.product/cmd/main.go` to start local product service. Replace `/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/config/local.yaml` with your local path to this local yaml file. Then the service is available at `http:127.0.0.1:1325`.
 - After code changes in service cart, to deploy the change to local kubernetes, use command `make deploy-cart`. Use similar strategy to deploy other services to kubernetes.
@@ -64,16 +64,20 @@ github.com/smiletrl/micro_service
 |   |-- local.yaml
 |   |-- prod.yaml
 |-- infrastructure
-|   |-- host.tf
-|   |-- main.tf
-|   |-- envs
-|   |   |-- dev
-|   |       |-- cluster.tf
-|   |       |-- gateway.yaml
-|   |       |-- main.tf
-|   |       |-- terraform.tfvars.example
-|   |       |-- variables.tf
-|   |       |-- virtual_services.yaml
+|   |-- local
+|   |   |-- host.tf
+|   |   |-- main.tf
+|   |   |-- envs
+|   |   |   |-- dev
+|   |   |   |   |-- cluster.tf
+|   |   |   |   |-- gateway.yaml
+|   |   |   |   |-- main.tf
+|   |   |   |   |-- terraform.tfvars.example
+|   |   |   |   |-- variables.tf
+|   |   |   |   |-- virtual_services.yaml
+|   |-- online
+|   |   |-- prod
+|   |   |-- staging
 |-- migrations
 |   |-- 2021xxxx.down.sql
 |   |-- 2021xxxx.up.sql

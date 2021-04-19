@@ -39,10 +39,10 @@ build-product:
 local-build: build-cart build-customer build-product
 
 terraform:
-	- cd infrastructure && terraform init
-	- cd infrastructure && terraform apply -auto-approve
-	- cd infrastructure/envs/dev && terraform init
-	- cd infrastructure/envs/dev && terraform apply -auto-approve
+	- cd infrastructure/local && terraform init
+	- cd infrastructure/local && terraform apply -auto-approve
+	- cd infrastructure/local/envs/dev && terraform init
+	- cd infrastructure/local/envs/dev && terraform apply -auto-approve
 
 # Start kubernetes at https://minikube.sigs.k8s.io/docs/start/
 # brew install minikube // minikube version: v1.19.0

@@ -33,7 +33,8 @@ resource "kubernetes_endpoints" "host" {
         address {
             // This ip comes from command: minikube ssh 'grep host.minikube.internal /etc/hosts | cut -f1'
             // This ip can also be used as service host at k8s container directly, instead of `minikube-host.default.svc.cluster.local`.
-            ip = "192.168.65.2"
+            //ip = "192.168.65.2"
+            ip = var.ip_host
         }
 
         port {
