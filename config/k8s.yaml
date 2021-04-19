@@ -17,4 +17,3 @@ redis:
   password: "123456"
   port: "6380"
 jwt_secret: "xxx"
-migration_path: "/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/migrations"
