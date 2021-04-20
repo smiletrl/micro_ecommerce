@@ -37,8 +37,10 @@ func main() {
 	healthcheck.RegisterHandlers(e.Group(""), db)
 
 	// rocketMQ message
-	err = order.Consume()
+	err = order.Consume(config.RocketMQ)
 	if err != nil {
 		panic(err)
 	}
+	// Start server
+	e.Logger.Fatal(e.Start(constants.RestPort))
 }

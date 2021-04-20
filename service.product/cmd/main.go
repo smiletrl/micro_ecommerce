@@ -42,7 +42,7 @@ func main() {
 	productService := product.NewService(productRepo)
 	product.RegisterHandlers(echoGroup, productService)
 
-	err = product.Consume()
+	err = product.Consume(config.RocketMQ)
 	if err != nil {
 		panic(err)
 	}

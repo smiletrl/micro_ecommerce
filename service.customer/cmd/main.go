@@ -42,7 +42,7 @@ func main() {
 	balanceService := balance.NewService(balanceRepo)
 	balance.RegisterHandlers(echoGroup, balanceService)
 
-	err = balance.Consume()
+	err = balance.Consume(config.RocketMQ)
 	if err != nil {
 		panic(err)
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
-	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
+	_ "github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
 	"os"
@@ -25,7 +25,6 @@ func main() {
 
 	// initialize service
 	stage := os.Getenv(constants.Stage)
-	stage = "/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/config/local.yaml"
 	if stage == "" {
 		stage = constants.StageLocal
 	}
@@ -38,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	rocketmq.Start()
+	//rocketmq.Start(config.RocketMQ)
 
 	healthcheck.RegisterHandlers(e.Group(""), db)
 

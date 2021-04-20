@@ -42,9 +42,9 @@ type RedisConfig struct {
 }
 
 type RocketMQConfig struct {
-	Host           string
-	NameServerPort string
-	BrokenPort     string
+	Host           string `yaml:"host"`
+	NameServerPort string `yaml:"name_server_port"`
+	BrokerPort     string `yaml:"broker_port"`
 }
 
 // CloudConfig is cloud config
@@ -151,8 +151,8 @@ func Load(stage string) (Config, error) {
 	if c.RocketMQ.NameServerPort == "" {
 		c.RocketMQ.NameServerPort = os.Getenv("ROCKETMQ_NAME_SERVER_PORT")
 	}
-	if c.RocketMQ.BrokenPort == "" {
-		c.RocketMQ.BrokenPort = os.Getenv("ROCKETMQ_BROKER_PORT")
+	if c.RocketMQ.BrokerPort == "" {
+		c.RocketMQ.BrokerPort = os.Getenv("ROCKETMQ_BROKER_PORT")
 	}
 
 	return c, nil

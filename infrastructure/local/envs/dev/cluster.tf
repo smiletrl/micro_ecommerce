@@ -107,6 +107,58 @@ resource "kubernetes_service" "product" {
     }
 }
 
+resource "kubernetes_service" "order" {
+    metadata {
+        name = "order"
+
+        labels = {
+            app = "order"
+        }
+
+        namespace = var.env
+    }
+
+    spec {
+        selector = {
+            app = "order"
+        }
+
+        port {
+            name        = "rest-api"
+            port        = 1325
+            target_port = 1325
+        }
+
+        type = "NodePort"
+    }
+}
+
+resource "kubernetes_service" "payment" {
+    metadata {
+        name = "payment"
+
+        labels = {
+            app = "payment"
+        }
+
+        namespace = var.env
+    }
+
+    spec {
+        selector = {
+            app = "payment"
+        }
+
+        port {
+            name        = "rest-api"
+            port        = 1325
+            target_port = 1325
+        }
+
+        type = "NodePort"
+    }
+}
+
 resource "kubernetes_deployment" "cart" {
     metadata {
         name = "cart"
@@ -304,3 +356,136 @@ resource "kubernetes_deployment" "product" {
         delete = "10m"
     }
 }
+
+resource "kubernetes_deployment" "order" {
+    metadata {
+        name = "order"
+
+        annotations = {
+        }
+
+        namespace = var.env
+    }
+
+    spec {
+        progress_deadline_seconds = 6000
+
+        replicas = 2
+
+        selector {
+            match_labels = {
+                app = "order"
+            }
+        }
+    
+        template {
+            metadata {
+                name = "order"
+
+                labels = {
+                    app = "order"
+                }
+            }
+        
+            spec {
+                container {
+                    name = "order"
+                    image = "${var.docker_registry}order:${var.env}"
+                    image_pull_policy = "Always"
+
+                    liveness_probe {
+                        http_get {
+                            path = "/health"
+                            port = "1325"
+                        }
+
+                        initial_delay_seconds = 1
+                        period_seconds = 1
+                    }
+
+                    env {
+                        name = "ENV"
+                        value = var.env
+                    }
+                    env {
+                        name = "STAGE"
+                        value = var.stage
+                    }
+                }
+            }
+        }
+    }
+
+    timeouts {
+        create = "10m"
+        update = "10m"
+        delete = "10m"
+    }
+}
+
+resource "kubernetes_deployment" "payment" {
+    metadata {
+        name = "payment"
+
+        annotations = {
+        }
+
+        namespace = var.env
+    }
+
+    spec {
+        progress_deadline_seconds = 6000
+
+        replicas = 2
+
+        selector {
+            match_labels = {
+                app = "payment"
+            }
+        }
+    
+        template {
+            metadata {
+                name = "payment"
+
+                labels = {
+                    app = "payment"
+                }
+            }
+        
+            spec {
+                container {
+                    name = "payment"
+                    image = "${var.docker_registry}payment:${var.env}"
+                    image_pull_policy = "Always"
+
+                    liveness_probe {
+                        http_get {
+                            path = "/health"
+                            port = "1325"
+                        }
+
+                        initial_delay_seconds = 1
+                        period_seconds = 1
+                    }
+
+                    env {
+                        name = "ENV"
+                        value = var.env
+                    }
+                    env {
+                        name = "STAGE"
+                        value = var.stage
+                    }
+                }
+            }
+        }
+    }
+
+    timeouts {
+        create = "10m"
+        update = "10m"
+        delete = "10m"
+    }
+}
+

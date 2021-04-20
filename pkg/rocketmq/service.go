@@ -18,30 +18,36 @@ type Service interface {
 	CreatePushConsumer(group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
 }
 
-func NewService() Service {
-	return service{}
+func NewService(cfg config.RocketMQConfig) Service {
+
+	return service{
+		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
+		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
+	}
 }
 
 type service struct {
-	cfg config.RocketMQConfig
+	serverAddress []string
+	brokerAddress string
 }
 
 func (s service) CreateTopic(topic constants.RocketMQTopic) error {
-	topicAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver([]string{"127.0.0.1:9876"})))
+	// check if this topic existing already
+	topicAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(s.serverAddress)))
 	if err != nil {
 		panic(err)
 	}
 	err = topicAdmin.CreateTopic(
 		context.Background(),
 		admin.WithTopicCreate(string(topic)),
-		admin.WithBrokerAddrCreate("127.0.0.1:10911"),
+		admin.WithBrokerAddrCreate(s.brokerAddress),
 	)
 	return err
 }
 
 func (s service) CreateProducer(group constants.RocketMQGroup) (rocketmq.Producer, error) {
 	p, err := rocketmq.NewProducer(
-		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"127.0.0.1:9876"})),
+		producer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
 		producer.WithRetry(2),
 		producer.WithGroupName(string(group)),
 	)
@@ -57,7 +63,7 @@ func (s service) CreateProducer(group constants.RocketMQGroup) (rocketmq.Produce
 
 func (s service) CreatePushConsumer(group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error) {
 	c, err := rocketmq.NewPushConsumer(
-		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{"127.0.0.1:9876"})),
+		consumer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
 		consumer.WithGroupName(string(group)),
 		// model needs to be set after group name somehow to make topic filter working.
 		consumer.WithConsumerModel(model),
@@ -72,25 +78,32 @@ func (s service) CreatePushConsumer(group constants.RocketMQGroup, model consume
 	return c, nil
 }
 
-func Start() {
+func Start(cfg config.RocketMQConfig) {
 	var err error
 
+	s := service{
+		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
+		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
+	}
+
+	fmt.Printf("rocketmq service: %+v\n", s)
+
 	// topic
-	testAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver([]string{"127.0.0.1:9876"})))
+	testAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(s.serverAddress)))
 	if err != nil {
 		panic(err)
 	}
 	err = testAdmin.CreateTopic(
 		context.Background(),
 		admin.WithTopicCreate("jack"),
-		admin.WithBrokerAddrCreate("127.0.0.1:10911"),
+		admin.WithBrokerAddrCreate(s.brokerAddress),
 	)
 	if err != nil {
 		panic(err)
 	}
 	// producer
 	p, err := rocketmq.NewProducer(
-		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{"127.0.0.1:9876"})),
+		producer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
 		producer.WithRetry(2),
 		producer.WithGroupName("GID_test"),
 	)
@@ -112,7 +125,7 @@ func Start() {
 
 	// consumer
 	c, err := rocketmq.NewPushConsumer(
-		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{"127.0.0.1:9876"})),
+		consumer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
 		consumer.WithGroupName("GID_test"),
 		// model needs to be set after group name somehow to make topic filter working.
 		consumer.WithConsumerModel(consumer.Clustering),

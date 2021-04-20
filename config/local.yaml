@@ -8,6 +8,10 @@ db:
   port: 5434
   sslmode: disable
   host: localhost
+rocketmq:
+  host: 127.0.0.1
+  name_server_port: 9876
+  broker_port: 10911
 redis:
   endpoint: "127.0.0.1"
   password: "123456"

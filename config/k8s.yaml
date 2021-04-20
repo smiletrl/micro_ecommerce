@@ -9,11 +9,11 @@ db:
   sslmode: disable
   host: minikube-host.default.svc.cluster.local
 rocketmq:
-  host: minikube-host.default.svc.cluster.local
+  host: 192.168.65.2
   name_server_port: 9876
   broker_port: 10911
 redis:
-  endpoint: "127.0.0.1"
+  endpoint: "minikube-host.default.svc.cluster.local"
   password: "123456"
   port: "6380"
 jwt_secret: "xxx"

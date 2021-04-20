@@ -36,7 +36,26 @@ build-product:
 	- docker tag micro_ecommerce/service_product:dev docker.io/smiletrl/micro_ecommerce_product:dev
 	- docker push docker.io/smiletrl/micro_ecommerce_product:dev
 
-local-build: build-cart build-customer build-product
+build-order:
+	- docker build -t micro_ecommerce/service_order:dev . -f service.order/Dockerfile
+	- docker login
+	- docker tag micro_ecommerce/service_order:dev docker.io/smiletrl/micro_ecommerce_order:dev
+	- docker push docker.io/smiletrl/micro_ecommerce_order:dev
+
+build-payment:
+	- docker build -t micro_ecommerce/service_payment:dev . -f service.payment/Dockerfile
+	- docker login
+	- docker tag micro_ecommerce/service_payment:dev docker.io/smiletrl/micro_ecommerce_payment:dev
+	- docker push docker.io/smiletrl/micro_ecommerce_payment:dev
+
+local-build: build-cart build-customer build-product build-order build-payment
+
+local-restart:
+	- kubectl rollout restart deployment/cart --namespace=dev
+	- kubectl rollout restart deployment/customer --namespace=dev
+	- kubectl rollout restart deployment/payment --namespace=dev
+	- kubectl rollout restart deployment/order --namespace=dev
+	- kubectl rollout restart deployment/product --namespace=dev
 
 terraform:
 	- cd infrastructure/local && terraform init

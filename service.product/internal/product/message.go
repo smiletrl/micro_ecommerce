@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 )
 
-func Consume() error {
-	rocket := rocketmq.NewService()
+func Consume(cfg config.RocketMQConfig) error {
+	rocket := rocketmq.NewService(cfg)
 	c, err := rocket.CreatePushConsumer(constants.RocketMQGroupPayment, consumer.Clustering)
 	if err != nil {
 		return err
