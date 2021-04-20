@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -40,8 +39,6 @@ func main() {
 
 	paymentRepo := payment.NewRepository(db)
 	paymentService := payment.NewService(paymentRepo)
-
-	fmt.Printf("rocketmq payment: %+v\n", config.RocketMQ)
 
 	rocketMQService := rocketmq.NewService(config.RocketMQ)
 	if err = rocketMQService.CreateTopic(constants.RocketMQTopicPayment); err != nil {
