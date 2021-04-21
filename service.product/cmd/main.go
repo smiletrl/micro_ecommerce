@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
+	"github.com/smiletrl/micro_ecommerce/pkg/mongodb"
 	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
 	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/server"
 	"os"
@@ -51,6 +53,12 @@ func main() {
 	go func() {
 		rpcserver.Register()
 	}()
+
+	err = mongodb.InitDB(config.MongoDB)
+	fmt.Printf("mongodb err: %+v\n", err)
+	if err != nil {
+		panic(err)
+	}
 
 	// Start rest server
 	e.Logger.Fatal(e.Start(constants.RestPort))

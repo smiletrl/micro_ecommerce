@@ -19,6 +19,7 @@ type Config struct {
 	Cloud         CloudConfig
 	Redis         RedisConfig
 	RocketMQ      RocketMQConfig
+	MongoDB       MongodbConfig
 	Stage         string
 	JwtSecret     string `yaml:"jwt_secret"`
 	MigrationPath string `yaml:"migration_path"`
@@ -39,6 +40,13 @@ type RedisConfig struct {
 	Endpoint string
 	Password string
 	Port     string
+}
+
+type MongodbConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
 }
 
 type RocketMQConfig struct {

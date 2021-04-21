@@ -12,6 +12,11 @@ rocketmq:
   host: 127.0.0.1
   name_server_port: 9876
   broker_port: 10911
+mongodb:
+  host: 127.0.0.1
+  port: 27018
+  user: root
+  password: "password"
 redis:
   endpoint: "127.0.0.1"
   password: "123456"

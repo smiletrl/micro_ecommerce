@@ -12,6 +12,11 @@ rocketmq:
   host: 192.168.65.2
   name_server_port: 9876
   broker_port: 10911
+mongodb:
+  host: minikube-host.default.svc.cluster.local
+  port: 27018
+  user: root
+  password: "password"
 redis:
   endpoint: "minikube-host.default.svc.cluster.local"
   password: "123456"
