@@ -18,7 +18,7 @@ func RegisterHandlers(r *echo.Group, service Service) {
 
 	group.POST("", res.Create)
 
-	group.DELETE("/:id", res.Delete)
+	group.DELETE("/:sku_id", res.Delete)
 }
 
 type resource struct {
@@ -63,7 +63,7 @@ type deleteResponse struct {
 }
 
 func (r resource) Delete(c echo.Context) error {
-	id := c.Param("id")
+	id := c.Param("sku_id")
 	idInt64, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return errorsd.BadRequest(c, err)

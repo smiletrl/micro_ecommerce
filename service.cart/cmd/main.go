@@ -37,8 +37,6 @@ func main() {
 		panic(err)
 	}
 
-	//rocketmq.Start(config.RocketMQ)
-
 	healthcheck.RegisterHandlers(e.Group(""), db)
 
 	// Product rpc client. Inject config
