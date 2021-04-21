@@ -1,3 +1,17 @@
+# Micro service ecommerce
+
+An ecommerce application with micro service infrastructure
+
+-------------------------
+- [Reference](#reference)
+- [Technical Stack](#technical-stack)
+- [Background](#background)
+- [UI Result](#ui-result)
+- [Services](#services)
+- [Local Installment, development & deployment](#local-installment-development--deployment)
+- [Project Structure](#project-structure)
+- [Note](#note)
+
 ### Reference
 - [Go Standard Layout](https://github.com/golang-standards/project-layout)
 - [Micro Service Concept](https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview-microservices)
@@ -112,6 +126,7 @@ github.com/smiletrl/micro_service
 |   |-- errors
 |   |-- healthcheck
 |   |-- migration
+|   |-- mongodb
 |   |-- rocketmq
 |   |-- test
 |-- redis
