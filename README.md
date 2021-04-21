@@ -26,7 +26,24 @@ For people who are new, but interested in micro service, this project is suppose
 - Terraform configuration for local development & deployment. It's supposed to be easily to be migrated to an online cloud environment, such as AWS.
 - Detailed documentation is on the way^
 
+### UI Result
+After installment of this project in local, try sending a few sample api requests
 
+```
+curl -X GET http://127.0.0.1/api/v1/cart_item
+curl -X POST http://127.0.0.1/api/v1/cart_item
+```
+
+Then the UI result may look like
+
+Kubernetes UI
+![Kubernetes UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/kubernetes%20UI.png)
+
+Jeager UI
+![Jeager UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/Jeager%20UI.png)
+
+Kiali UI
+![Kiali UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/Kiali%20UI.png)
 
 ### Services
 Services include following at this moment. Different service might use different database & different language. Right now, Golang is the only language, but python, nodejs or vuejs might be picked for later service, such as analytical, frontend services.
