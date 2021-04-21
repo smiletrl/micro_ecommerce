@@ -1,6 +1,7 @@
 resource "kubernetes_namespace" "env" {
   metadata {
     labels = {
+        "istio-injection" = "enabled"
     }
 
     name = var.env
@@ -42,6 +43,7 @@ resource "kubernetes_service" "cart" {
         }
 
         port {
+            name        = "http-rest-api"
             port        = 1325
             target_port = 1325
         }
@@ -67,6 +69,7 @@ resource "kubernetes_service" "customer" {
         }
 
         port {
+            name        = "http-rest-api"
             port        = 1325
             target_port = 1325
         }
@@ -92,13 +95,13 @@ resource "kubernetes_service" "product" {
         }
 
         port {
-            name        = "rest-api"
+            name = "http-rest-api"
             port        = 1325
             target_port = 1325
         }
 
         port {
-            name        = "grpc"
+            name        = "http2-grpc"
             port        = 50051
             target_port = 50051
         }
@@ -124,7 +127,7 @@ resource "kubernetes_service" "order" {
         }
 
         port {
-            name        = "rest-api"
+            name        = "http-rest-api"
             port        = 1325
             target_port = 1325
         }
@@ -150,7 +153,7 @@ resource "kubernetes_service" "payment" {
         }
 
         port {
-            name        = "rest-api"
+            name        = "http-rest-api"
             port        = 1325
             target_port = 1325
         }
@@ -162,6 +165,9 @@ resource "kubernetes_service" "payment" {
 resource "kubernetes_deployment" "cart" {
     metadata {
         name = "cart"
+        labels = {
+          version = "v1"
+        }
 
         annotations = {
         }
@@ -177,6 +183,7 @@ resource "kubernetes_deployment" "cart" {
         selector {
             match_labels = {
                 app = "cart"
+                version = "v1"
             }
         }
     
@@ -186,6 +193,7 @@ resource "kubernetes_deployment" "cart" {
 
                 labels = {
                     app = "cart"
+                    version = "v1"
                 }
             }
         
@@ -228,6 +236,9 @@ resource "kubernetes_deployment" "cart" {
 resource "kubernetes_deployment" "customer" {
     metadata {
         name = "customer"
+        labels = {
+            version = "v1"
+        }
 
         annotations = {
         }
@@ -243,6 +254,7 @@ resource "kubernetes_deployment" "customer" {
         selector {
             match_labels = {
                 app = "customer"
+                version = "v1"
             }
         }
     
@@ -252,6 +264,7 @@ resource "kubernetes_deployment" "customer" {
 
                 labels = {
                     app = "customer"
+                    version = "v1"
                 }
             }
         
@@ -294,6 +307,9 @@ resource "kubernetes_deployment" "customer" {
 resource "kubernetes_deployment" "product" {
     metadata {
         name = "product"
+        labels = {
+            version = "v1"
+        }
 
         annotations = {
         }
@@ -309,6 +325,7 @@ resource "kubernetes_deployment" "product" {
         selector {
             match_labels = {
                 app = "product"
+                version = "v1"
             }
         }
     
@@ -318,6 +335,7 @@ resource "kubernetes_deployment" "product" {
 
                 labels = {
                     app = "product"
+                    version = "v1"
                 }
             }
         
@@ -360,6 +378,9 @@ resource "kubernetes_deployment" "product" {
 resource "kubernetes_deployment" "order" {
     metadata {
         name = "order"
+        labels = {
+            version = "v1"
+        }
 
         annotations = {
         }
@@ -375,6 +396,7 @@ resource "kubernetes_deployment" "order" {
         selector {
             match_labels = {
                 app = "order"
+                version = "v1"
             }
         }
     
@@ -384,6 +406,7 @@ resource "kubernetes_deployment" "order" {
 
                 labels = {
                     app = "order"
+                    version = "v1"
                 }
             }
         
@@ -426,6 +449,9 @@ resource "kubernetes_deployment" "order" {
 resource "kubernetes_deployment" "payment" {
     metadata {
         name = "payment"
+        labels = {
+            version = "v1"
+        }
 
         annotations = {
         }
@@ -441,6 +467,7 @@ resource "kubernetes_deployment" "payment" {
         selector {
             match_labels = {
                 app = "payment"
+                version = "v1"
             }
         }
     
@@ -450,6 +477,7 @@ resource "kubernetes_deployment" "payment" {
 
                 labels = {
                     app = "payment"
+                    "version" = "v1"
                 }
             }
         
