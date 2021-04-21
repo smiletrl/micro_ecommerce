@@ -14,17 +14,19 @@
 - [RocketMQ](https://rocketmq.apache.org/)
 
 ### Background
-This repo shows a simple ecommerce app running based on micro service architecture. It could run in a local environment with miniKube for local development. The primary language is Golang for these micro services. Kubernetes & istio are used for service register & discovery.
+This project shows a simple ecommerce app running based on micro service architecture. It could run in a local environment with miniKube for local development. The primary language is Golang for these micro services. Kubernetes & istio are used for service register & discovery.
 
 Ideally, each service would have its own database. In this project, one database, especially postgresSQL will be shared among a few services. But each service will only have access to its own tables.
 
-For people who are new, but interested in micro service, this repo is supposed to provide basic usage for items:
+For people who are new, but interested in micro service, this project is supposed to provide basic usage for items:
 
 - Kubernetes & Istio for service register, discovery and more micro service features.
 - gRPC for sync communication between micro services to provide low latency internal service response.
 - RocketMQ for async communication to decouple services to focus on individual service development.
 - Terraform configuration for local development & deployment. It's supposed to be easily to be migrated to an online cloud environment, such as AWS.
 - Detailed documentation is on the way^
+
+
 
 ### Services
 Services include following at this moment. Different service might use different database & different language. Right now, Golang is the only language, but python, nodejs or vuejs might be picked for later service, such as analytical, frontend services.
