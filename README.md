@@ -11,6 +11,7 @@ An ecommerce application with micro service infrastructure
 - [Local Installment, development & deployment](#local-installment-development--deployment)
 - [Project Structure](#project-structure)
 - [Note](#note)
+-------------------------
 
 ### Reference
 - [Go Standard Layout](https://github.com/golang-standards/project-layout)
