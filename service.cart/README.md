@@ -1,5 +1,5 @@
 ## Cart
-Cart is a simple cart implementation, using redis to provide high performance update (to be implemented).
+Cart is a simple cart implementation, using redis to provide high performance update.
 
 Redis uses hash to store customer cart data
 
