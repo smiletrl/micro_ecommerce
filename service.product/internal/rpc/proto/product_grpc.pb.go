@@ -18,8 +18,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProductClient interface {
-	// given a sku id, and return its detail.
-	GetSKU(ctx context.Context, in *SKUID, opts ...grpc.CallOption) (*SKU, error)
+	// given a sku id, and return its stock
+	GetSkuStock(ctx context.Context, in *SkuID, opts ...grpc.CallOption) (*Stock, error)
+	// given an array of sku ids, return their properties
+	GetSkuProperties(ctx context.Context, in *SkuIDs, opts ...grpc.CallOption) (*SkuProperties, error)
 }
 
 type productClient struct {
@@ -30,9 +32,18 @@ func NewProductClient(cc grpc.ClientConnInterface) ProductClient {
 	return &productClient{cc}
 }
 
-func (c *productClient) GetSKU(ctx context.Context, in *SKUID, opts ...grpc.CallOption) (*SKU, error) {
-	out := new(SKU)
-	err := c.cc.Invoke(ctx, "/proto.Product/GetSKU", in, out, opts...)
+func (c *productClient) GetSkuStock(ctx context.Context, in *SkuID, opts ...grpc.CallOption) (*Stock, error) {
+	out := new(Stock)
+	err := c.cc.Invoke(ctx, "/proto.Product/GetSkuStock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *productClient) GetSkuProperties(ctx context.Context, in *SkuIDs, opts ...grpc.CallOption) (*SkuProperties, error) {
+	out := new(SkuProperties)
+	err := c.cc.Invoke(ctx, "/proto.Product/GetSkuProperties", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +54,10 @@ func (c *productClient) GetSKU(ctx context.Context, in *SKUID, opts ...grpc.Call
 // All implementations must embed UnimplementedProductServer
 // for forward compatibility
 type ProductServer interface {
-	// given a sku id, and return its detail.
-	GetSKU(context.Context, *SKUID) (*SKU, error)
+	// given a sku id, and return its stock
+	GetSkuStock(context.Context, *SkuID) (*Stock, error)
+	// given an array of sku ids, return their properties
+	GetSkuProperties(context.Context, *SkuIDs) (*SkuProperties, error)
 	mustEmbedUnimplementedProductServer()
 }
 
@@ -52,8 +65,11 @@ type ProductServer interface {
 type UnimplementedProductServer struct {
 }
 
-func (UnimplementedProductServer) GetSKU(context.Context, *SKUID) (*SKU, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSKU not implemented")
+func (UnimplementedProductServer) GetSkuStock(context.Context, *SkuID) (*Stock, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSkuStock not implemented")
+}
+func (UnimplementedProductServer) GetSkuProperties(context.Context, *SkuIDs) (*SkuProperties, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSkuProperties not implemented")
 }
 func (UnimplementedProductServer) mustEmbedUnimplementedProductServer() {}
 
@@ -68,20 +84,38 @@ func RegisterProductServer(s grpc.ServiceRegistrar, srv ProductServer) {
 	s.RegisterService(&Product_ServiceDesc, srv)
 }
 
-func _Product_GetSKU_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SKUID)
+func _Product_GetSkuStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SkuID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ProductServer).GetSKU(ctx, in)
+		return srv.(ProductServer).GetSkuStock(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Product/GetSKU",
+		FullMethod: "/proto.Product/GetSkuStock",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProductServer).GetSKU(ctx, req.(*SKUID))
+		return srv.(ProductServer).GetSkuStock(ctx, req.(*SkuID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Product_GetSkuProperties_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SkuIDs)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServer).GetSkuProperties(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Product/GetSkuProperties",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServer).GetSkuProperties(ctx, req.(*SkuIDs))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -94,8 +128,12 @@ var Product_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ProductServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetSKU",
-			Handler:    _Product_GetSKU_Handler,
+			MethodName: "GetSkuStock",
+			Handler:    _Product_GetSkuStock_Handler,
+		},
+		{
+			MethodName: "GetSkuProperties",
+			Handler:    _Product_GetSkuProperties_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

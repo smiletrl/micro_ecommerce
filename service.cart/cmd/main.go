@@ -60,10 +60,9 @@ type product struct {
 }
 
 func (p product) GetSkuStock(c echo.Context, skuID string) (int, error) {
-	return 12, nil
-	//return p.client.GetSKU(skuID)
+	return p.client.GetSkuStock(c, skuID)
 }
 
-func (p product) GetSkuProperties(c echo.Context, skuID []string) ([]entity.SkuProperty, error) {
-	return []entity.SkuProperty{}, nil
+func (p product) GetSkuProperties(c echo.Context, skuIDs []string) ([]entity.SkuProperty, error) {
+	return p.client.GetSkuProperties(c, skuIDs)
 }

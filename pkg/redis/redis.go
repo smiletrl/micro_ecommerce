@@ -6,7 +6,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"log"
+	_ "log"
 )
 
 // New creates a new redis client
@@ -15,7 +15,7 @@ func New(cfg config.Config) *redis.Client {
 	redisOptions := &redis.Options{
 		Addr:     cfg.Redis.Endpoint + ":" + cfg.Redis.Port,
 		Password: cfg.Redis.Password,
-		DB:       1,
+		DB:       0,
 	}
 	stage := cfg.Stage
 	if stage != constants.StageLocal && stage != constants.StageGithub {
@@ -26,7 +26,7 @@ func New(cfg config.Config) *redis.Client {
 
 	rdb := redis.NewClient(redisOptions)
 	if _, err := rdb.Ping(context.Background()).Result(); err != nil {
-		log.Printf("redis ping error: %s", err.Error())
+		//log.Printf("redis ping error: %s", err.Error())
 		panic(err)
 	}
 	return rdb

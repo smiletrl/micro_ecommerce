@@ -2,6 +2,7 @@ package external
 
 import (
 	"context"
+	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
@@ -12,8 +13,11 @@ import (
 )
 
 type Client interface {
-	// Get sku detail
-	GetSKU(skuID int64) (sku entity.SKU, err error)
+	// Get sku stock
+	GetSkuStock(eContext echo.Context, skuID string) (stock int, err error)
+
+	// Get sku property
+	GetSkuProperties(eContext echo.Context, skuIDs []string) (properties []entity.SkuProperty, err error)
 }
 
 type client struct {
@@ -40,22 +44,40 @@ func newConnection() pb.ProductClient {
 	return pb.NewProductClient(conn)
 }
 
-func (c client) GetSKU(skuID int64) (sku entity.SKU, err error) {
+func (c client) GetSkuStock(eContext echo.Context, skuID string) (stock int, err error) {
 	c.grpc = newConnection()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	res, err := c.grpc.GetSKU(ctx, &pb.SKUID{Value: skuID})
+	pbstock, err := c.grpc.GetSkuStock(ctx, &pb.SkuID{Value: skuID})
 	if err != nil {
-		return sku, errors.Wrapf(errorsd.New("error getting sku from rpc"), "error getting sku from rpc: %s", err.Error())
+		return stock, errors.Wrapf(errorsd.New("error getting sku stock from rpc"), "error getting sku stock from rpc: %s", err.Error())
 	}
-	if res != nil {
-		sku = entity.SKU{
-			Stock:      int(res.Stock),
-			Amount:     int(res.Amount),
-			Title:      res.Title,
-			Attributes: res.Attributes,
+
+	return int(pbstock.Value), nil
+}
+
+func (c client) GetSkuProperties(eContext echo.Context, skuIDs []string) (properties []entity.SkuProperty, err error) {
+	c.grpc = newConnection()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	gProperties, err := c.grpc.GetSkuProperties(ctx, &pb.SkuIDs{Value: skuIDs})
+	if err != nil {
+		return nil, errors.Wrapf(errorsd.New("error getting sku properties from rpc"), "error getting sku properties from rpc: %s", err.Error())
+	}
+	properties = make([]entity.SkuProperty, len(gProperties.Properties))
+	for i, val := range gProperties.Properties {
+		// maybe use int32 for entity
+		properties[i] = entity.SkuProperty{
+			SkuID:      val.GetId(),
+			Title:      val.GetTitle(),
+			Price:      int(val.GetPrice()),
+			Attributes: val.GetAttributes(),
+			Thumbnail:  val.GetThumbnail(),
+			Stock:      int(val.GetStock()),
 		}
 	}
-	return sku, nil
+
+	return properties, nil
 }

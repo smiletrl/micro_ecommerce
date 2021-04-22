@@ -18,14 +18,14 @@ type service struct {
 }
 
 func NewService(secret string) Service {
-	return &service{secret}
+	return service{secret}
 }
 
 // Authorization header
 var authScheme string = "Bearer"
 
 // ParseToken get jwt token from request header, and then get user id signed inside the token
-func (s *service) ParseCustomerToken(c echo.Context) (int64, error) {
+func (s service) ParseCustomerToken(c echo.Context) (int64, error) {
 	var (
 		token *jwt.Token
 		err   error
@@ -44,21 +44,21 @@ func (s *service) ParseCustomerToken(c echo.Context) (int64, error) {
 		return []byte(s.JwtSecret), nil
 	})
 	if err != nil || !token.Valid {
-		return 0, errors.New("Incorrect or outdated auth parameter")
+		return 0, errors.New("incorrect or outdated auth token")
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
-	customerID, ok := claims[constants.AuthCustomerID].(int64)
+	customerID, ok := claims[constants.AuthCustomerID].(float64)
 	if !ok {
-		return 0, errors.Errorf("Unrecognized customer id: %v", claims[constants.AuthCustomerID])
+		return 0, errors.Errorf("unrecognized customer id: %v", claims[constants.AuthCustomerID])
 	}
 
-	return customerID, nil
+	return int64(customerID), nil
 }
 
 // NewToken from user id. `user` is `staff` in this case.
 // We may want to add other info into jwt token for other purposes.
-func (s *service) NewCustomerToken(customerID int64) (string, error) {
+func (s service) NewCustomerToken(customerID int64) (string, error) {
 	// Create token
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -77,13 +77,13 @@ func (s *service) NewCustomerToken(customerID int64) (string, error) {
 type mockService struct{}
 
 func NewMockService() Service {
-	return &mockService{}
+	return mockService{}
 }
 
-func (m *mockService) ParseCustomerToken(c echo.Context) (int64, error) {
+func (m mockService) ParseCustomerToken(c echo.Context) (int64, error) {
 	return int64(0), nil
 }
 
-func (m *mockService) NewCustomerToken(userID int64) (string, error) {
+func (m mockService) NewCustomerToken(userID int64) (string, error) {
 	return "secret_token", nil
 }

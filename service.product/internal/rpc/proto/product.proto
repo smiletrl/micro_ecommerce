@@ -6,18 +6,35 @@ package proto;
 
 // product service definition.
 service Product {
-  // given a sku id, and return its detail.
-  rpc GetSKU (SKUID) returns(SKU){}
+  // given a sku id, and return its stock
+  rpc GetSkuStock (SkuID) returns(Stock){}
+
+  // given an array of sku ids, return their properties
+  rpc GetSkuProperties(SkuIDs) returns(SkuProperties){}
 }
 
-message SKUID {
-  int64 value = 1;
+message SkuID {
+  string value = 1;
+}
+
+message SkuIDs {
+  repeated string value = 1;
+}
+
+message Stock {
+  int32 value = 1;
 }
 
 // stock, amount, title, attributes
-message SKU {
-  int32 stock = 1; // sku stock value
-  int32 amount = 2; // sku price amount
-  string title = 3; // product title for this sku
-  string attributes = 4; // attributes used to describe this sku, such as color, size.
+message SkuProperty {
+  string id = 1; // sku id
+  int32 stock = 2; // sku stock value
+  int32 price = 3; // sku price amount
+  string title = 4; // product title for this sku
+  string attributes = 5; // attributes used to describe this sku, such as color, size.
+  string thumbnail = 6; // thumbnail string
+}
+
+message SkuProperties {
+  repeated SkuProperty properties = 1;
 }

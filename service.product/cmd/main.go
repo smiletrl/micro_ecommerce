@@ -36,7 +36,7 @@ func main() {
 		panic(err)
 	}
 
-	healthcheck.RegisterHandlers(e.Group(""), db)
+	healthcheck.RegisterHandlers(e.Group(""))
 
 	// product
 	productRepo := product.NewRepository(db)

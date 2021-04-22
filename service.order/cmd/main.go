@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
+	_ "github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/service.order/internal/order"
 	"os"
@@ -29,12 +29,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db, err := dbcontext.InitDB(config)
-	if err != nil {
-		panic(err)
-	}
+	//db, err := dbcontext.InitDB(config)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	healthcheck.RegisterHandlers(e.Group(""), db)
+	healthcheck.RegisterHandlers(e.Group(""))
 
 	// rocketMQ message
 	err = order.Consume(config.RocketMQ)

@@ -35,7 +35,7 @@ func main() {
 		panic(err)
 	}
 
-	healthcheck.RegisterHandlers(e.Group(""), db)
+	healthcheck.RegisterHandlers(e.Group(""))
 
 	paymentRepo := payment.NewRepository(db)
 	paymentService := payment.NewService(paymentRepo)
