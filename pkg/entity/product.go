@@ -21,3 +21,12 @@ type SKU struct {
 	Title      string
 	Attributes string
 }
+
+type SkuProperty struct {
+	SkuID      string `json:"sku_id"`
+	Title      string `json:"title"`
+	Price      int    `json:"price"`
+	Attributes string `json:"attributes"`
+	Thumbnail  string `json:"thumbnail"`
+	Stock      int    `json:"stock"`
+}

@@ -1,46 +1,75 @@
 package cart
 
 import (
+	"context"
+	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
-	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
+	"strconv"
 )
 
 // Repository db repository
 type Repository interface {
-	// get customer
-	Get(c echo.Context, id int64) (items []cartItem, err error)
+	Get(c echo.Context, customerID int64) (items map[string]string, err error)
 
-	// create new customer
-	Create(c echo.Context, customerID, productID int64, productTitle string, quantity int) (id int64, err error)
+	Create(c echo.Context, customerID int64, skuID string, quantity int) error
 
-	// update customer
-	Update(c echo.Context, id int64, email string) error
+	Update(c echo.Context, customerID int64, skuID string, quantity int) error
 
-	// delete customer
-	Delete(c echo.Context, id int64) error
+	Delete(c echo.Context, customerID int64, skuID string) error
 }
 
 type repository struct {
-	db dbcontext.DB
+	rdb *redis.Client
 }
 
 // NewRepository returns a new repostory
-func NewRepository(db dbcontext.DB) Repository {
-	return &repository{db}
+func NewRepository(rdb *redis.Client) Repository {
+	return &repository{rdb}
 }
 
-func (r repository) Get(c echo.Context, id int64) (items []cartItem, err error) {
-	return items, err
+func (r repository) Get(c echo.Context, customerID int64) (items map[string]string, err error) {
+	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
+	result, err := r.rdb.HGetAll(context.Background(), key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return items, nil
+		}
+		return items, err
+	}
+	return result, nil
 }
 
-func (r repository) Create(c echo.Context, customerID, productID int64, productTitle string, quantity int) (id int64, err error) {
-	return id, nil
-}
-
-func (r repository) Update(c echo.Context, id int64, email string) error {
+func (r repository) Create(c echo.Context, customerID int64, skuID string, quantity int) error {
+	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
+	// if this sku doesn't exist, create a new hash
+	if isExisting := r.rdb.HExists(context.Background(), key, skuID).Val(); !isExisting {
+		_, err := r.rdb.HSet(context.Background(), key, skuID, quantity).Result()
+		if err != nil {
+			return err
+		}
+	} else {
+		// increase the sku quantity in cart
+		currentQuantity, err := r.rdb.HGet(context.Background(), key, skuID).Int()
+		if err != nil {
+			return err
+		}
+		_, err = r.rdb.HSet(context.Background(), skuID, currentQuantity+quantity).Result()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func (r repository) Delete(c echo.Context, id int64) error {
-	return nil
+func (r repository) Update(c echo.Context, customerID int64, skuID string, quantity int) error {
+	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
+	_, err := r.rdb.HSet(context.Background(), key, skuID, quantity).Result()
+	return err
+}
+
+func (r repository) Delete(c echo.Context, customerID int64, skuID string) error {
+	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
+	_, err := r.rdb.HDel(context.Background(), key, skuID).Result()
+	return err
 }

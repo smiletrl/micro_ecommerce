@@ -1,21 +1,21 @@
-package cache
+package redis
 
 import (
 	"context"
 	"crypto/tls"
+	"github.com/go-redis/redis/v8"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/go-redis/redis/v8"
 	"log"
 )
 
-// NewRedis new redis client
-func NewRedis(cfg *config.Config) *redis.Client {
+// New creates a new redis client
+func New(cfg config.Config) *redis.Client {
 	// redis service
 	redisOptions := &redis.Options{
 		Addr:     cfg.Redis.Endpoint + ":" + cfg.Redis.Port,
 		Password: cfg.Redis.Password,
-		DB:       0, // use default DB
+		DB:       1,
 	}
 	stage := cfg.Stage
 	if stage != constants.StageLocal && stage != constants.StageGithub {

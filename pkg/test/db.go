@@ -10,13 +10,9 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	configd "github.com/smiletrl/micro_ecommerce/pkg/config"
-	contextd "github.com/smiletrl/micro_ecommerce/pkg/context"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo"
 	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"path"
 	"runtime"
@@ -97,14 +93,4 @@ func DB() (*pgxpool.Pool, configd.Config, error) {
 	}
 
 	return dbpool, cfg, nil
-}
-
-// Context returns mock context
-func Context() *contextd.Context {
-	e := echo.New()
-	req := &http.Request{}
-	w := httptest.NewRecorder()
-	c := e.NewContext(req, w)
-	cc := contextd.NewMock(c)
-	return cc
 }

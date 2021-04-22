@@ -5,9 +5,10 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
+	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
+	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	_ "github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
@@ -32,21 +33,22 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db, err := dbcontext.InitDB(config)
-	if err != nil {
-		panic(err)
-	}
+	healthcheck.RegisterHandlers(e.Group(""))
 
-	healthcheck.RegisterHandlers(e.Group(""), db)
+	// redis
+	redisClient := redis.New(config)
+
+	jwtService := jwt.NewService(config.JwtSecret)
 
 	// Product rpc client. Inject config
 	pclient := productClient.NewClient()
 
 	// cart
-	cartRepo := cart.NewRepository(db)
+	cartRepo := cart.NewRepository(redisClient)
+
 	productProxy := product{pclient}
 	cartService := cart.NewService(cartRepo, productProxy)
-	cart.RegisterHandlers(echoGroup, cartService)
+	cart.RegisterHandlers(echoGroup, cartService, jwtService)
 
 	// Start server
 	e.Logger.Fatal(e.Start(constants.RestPort))
@@ -57,6 +59,11 @@ type product struct {
 	client productClient.Client
 }
 
-func (p product) GetSKU(c echo.Context, skuID int64) (entity.SKU, error) {
-	return p.client.GetSKU(skuID)
+func (p product) GetSkuStock(c echo.Context, skuID string) (int, error) {
+	return 12, nil
+	//return p.client.GetSKU(skuID)
+}
+
+func (p product) GetSkuProperties(c echo.Context, skuID []string) ([]entity.SkuProperty, error) {
+	return []entity.SkuProperty{}, nil
 }

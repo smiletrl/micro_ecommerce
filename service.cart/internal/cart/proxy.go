@@ -6,5 +6,6 @@ import (
 )
 
 type ProductProxy interface {
-	GetSKU(c echo.Context, skuID int64) (entity.SKU, error)
+	GetSkuStock(c echo.Context, skuID string) (int, error)
+	GetSkuProperties(c echo.Context, skuIDs []string) ([]entity.SkuProperty, error)
 }

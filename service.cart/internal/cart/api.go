@@ -1,18 +1,19 @@
 package cart
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/smiletrl/micro_ecommerce/pkg/auth"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
+	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
 	"net/http"
-	"strconv"
 )
 
 // RegisterHandlers for handlers
-func RegisterHandlers(r *echo.Group, service Service) {
+func RegisterHandlers(r *echo.Group, service Service, jwt jwt.Service) {
 	res := &resource{service}
 
-	group := r.Group("/cart_item")
+	group := r.Group("/cart")
+	group.Use(auth.CustomerMiddleware(jwt))
 
 	group.GET("", res.Get)
 
@@ -26,12 +27,12 @@ type resource struct {
 }
 
 type createRequest struct {
-	Quantity int   `json:"quantity"`
-	SKUID    int64 `json:"sku_id"`
+	Quantity int    `json:"quantity"`
+	SkuID    string `json:"sku_id"`
 }
 
 type createResponse struct {
-	cartItem
+	Data string `json:"data"`
 }
 
 func (r resource) Get(c echo.Context) error {
@@ -43,18 +44,14 @@ func (r resource) Create(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, err)
 	}
-	fmt.Printf("req is: %+v\n", req)
-
-	// @todo get customer id from middleware/context.
-	customerID := int64(12)
 
 	// RPC call to service product to get the product sku title, price, stock
-	cart, err := r.service.Create(c, customerID, req.SKUID, req.Quantity)
+	err := r.service.Create(c, req.SkuID, req.Quantity)
 	if err != nil {
 		return errorsd.Abort(c, err)
 	}
 	return c.JSON(http.StatusOK, createResponse{
-		cartItem: cart,
+		Data: "ok",
 	})
 }
 
@@ -63,13 +60,8 @@ type deleteResponse struct {
 }
 
 func (r resource) Delete(c echo.Context) error {
-	id := c.Param("sku_id")
-	idInt64, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		return errorsd.BadRequest(c, err)
-	}
-
-	err = r.service.Delete(c, idInt64)
+	skuID := c.Param("sku_id")
+	err := r.service.Delete(c, skuID)
 	if err != nil {
 		return errorsd.Abort(c, err)
 	}

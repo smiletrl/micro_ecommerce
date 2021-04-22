@@ -2,21 +2,23 @@ package cart
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
+	"strconv"
 )
 
 // Service is cart service
 type Service interface {
-	Get(c echo.Context, customerID int64) (items []cartItem, err error)
+	Get(c echo.Context) (cart []cartItem, err error)
 
 	// create new cart
-	Create(c echo.Context, customerID, skuID int64, quantity int) (item cartItem, err error)
+	Create(c echo.Context, skuID string, quantity int) error
 
 	// update cart
-	Update(c echo.Context, customerID string, skuID int64, quantity int) error
+	Update(c echo.Context, skuID string, quantity int) error
 
 	// delete cart
-	Delete(c echo.Context, customerID string, skuID int64) error
+	Delete(c echo.Context, skuID string) error
 }
 
 type service struct {
@@ -26,39 +28,97 @@ type service struct {
 
 // NewService is to create new service
 func NewService(repo Repository, product ProductProxy) Service {
-	return &service{repo, product}
+	return service{repo, product}
 }
 
-func (s *service) Get(c echo.Context, id int64) (items []cartItem, err error) {
-	// @todo get each cart item detail from product service
-	// depending on the performance, maybe add the result to redis cache too.
-	return s.repo.Get(c, id)
-}
+func (s service) Get(c echo.Context) (cart []cartItem, err error) {
+	// depending on the performance, maybe add the result to redis cache.
+	customerID := c.Get(constants.AuthCustomerID).(int64)
 
-func (s *service) Create(c echo.Context, customerID, skuID int64, quantity int) (item cartItem, err error) {
-	// get product sku stock & verify this cart item can be created.
-	sku, err := s.productProxy.GetSKU(c, skuID)
+	// items is a map, key is skuID, value is this sku's quantity in cart
+	items, err := s.repo.Get(c, customerID)
 	if err != nil {
-		return item, err
+		return cart, err
 	}
-	if sku.Stock < quantity {
-		return item, errorsd.New("Product stock is not enough")
-	}
-	item = cartItem{
-		CustomerID: int64(15),
-		SkuID:      "123344qwqw",
-	}
-	return item, nil
 
-	//return s.repo.Create(c, customer_id, product_id, product.Title, quantity)
+	// get all sku ids and retrieve the sku properties
+	skuIDs := make([]string, len(items))
+	i := 0
+	for skuID := range items {
+		skuIDs[i] = skuID
+		i++
+	}
+
+	// get sku properties from product service
+	properties, err := s.productProxy.GetSkuProperties(c, skuIDs)
+	if err != nil {
+		return cart, err
+	}
+
+	cart = make([]cartItem, len(items))
+	j := 0
+
+	for _, property := range properties {
+		quantity, err := strconv.Atoi(items[property.SkuID])
+		if err != nil {
+			return cart, err
+		}
+		valid := true
+		// if sku stock is less than sku quantity in cart, then this cart item
+		// will be no longer valid.
+		if property.Stock < quantity {
+			valid = false
+		}
+		cart[j] = cartItem{
+			Quantity:    quantity,
+			Valid:       valid,
+			SkuProperty: property,
+		}
+		j++
+	}
+
+	return cart, err
 }
 
-func (s *service) Update(c echo.Context, customerID string, skuID int64, quantity int) error {
-	return nil
-	//return s.repo.Update(c, id, email)
+func (s service) Create(c echo.Context, skuID string, quantity int) error {
+
+	customerID := c.Get(constants.AuthCustomerID).(int64)
+
+	// get product sku stock
+	stock, err := s.productProxy.GetSkuStock(c, skuID)
+	if err != nil {
+		return err
+	}
+	if stock < quantity {
+		return errorsd.New("product stock is not enough")
+	}
+
+	return s.repo.Create(c, customerID, skuID, quantity)
 }
 
-func (s *service) Delete(c echo.Context, customerID string, skuID int64) error {
-	return nil
-	//return s.repo.Delete(c, id)
+func (s service) Update(c echo.Context, skuID string, quantity int) error {
+
+	customerID := c.Get(constants.AuthCustomerID).(int64)
+
+	if quantity < 1 {
+		return errorsd.New("quantity can not be under 1")
+	}
+
+	// get product sku stock
+	stock, err := s.productProxy.GetSkuStock(c, skuID)
+	if err != nil {
+		return err
+	}
+	if stock < quantity {
+		return errorsd.New("product stock is not enough")
+	}
+
+	return s.repo.Update(c, customerID, skuID, quantity)
+}
+
+func (s service) Delete(c echo.Context, skuID string) error {
+
+	customerID := c.Get(constants.AuthCustomerID).(int64)
+
+	return s.repo.Delete(c, customerID, skuID)
 }

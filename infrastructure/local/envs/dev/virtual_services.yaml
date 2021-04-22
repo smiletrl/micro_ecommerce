@@ -11,7 +11,7 @@ spec:
   http:
   - match:
     - uri:
-        prefix: /api/v1/cart_item
+        prefix: /api/v1/cart
     route:
     - destination:
         host: cart
