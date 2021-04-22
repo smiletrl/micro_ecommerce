@@ -35,8 +35,18 @@ type createResponse struct {
 	Data string `json:"data"`
 }
 
+type getResponse struct {
+	Data []cartItem `json:"data"`
+}
+
 func (r resource) Get(c echo.Context) error {
-	return c.String(http.StatusOK, "succeed!")
+	items, err := r.service.Get(c)
+	if err != nil {
+		return errorsd.Abort(c, err)
+	}
+	return c.JSON(http.StatusOK, getResponse{
+		Data: items,
+	})
 }
 
 func (r resource) Create(c echo.Context) error {
