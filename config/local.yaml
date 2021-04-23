@@ -13,6 +13,7 @@ rocketmq:
   name_server_port: 9876
   broker_port: 10911
 mongodb:
+  name: product
   host: 127.0.0.1
   port: 27018
   user: root

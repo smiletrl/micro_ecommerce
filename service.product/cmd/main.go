@@ -5,9 +5,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/mongodb"
+	"github.com/smiletrl/micro_ecommerce/pkg/mongodb"
 	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
 	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/server"
 	"os"
@@ -31,12 +30,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db, err := dbcontext.InitDB(config)
+
+	healthcheck.RegisterHandlers(e.Group(""))
+
+	db, err := mongodb.DB(config.MongoDB)
 	if err != nil {
 		panic(err)
 	}
-
-	healthcheck.RegisterHandlers(e.Group(""))
 
 	// product
 	productRepo := product.NewRepository(db)
@@ -52,12 +52,6 @@ func main() {
 	go func() {
 		rpcserver.Register()
 	}()
-
-	/*err = mongodb.InitDB(config.MongoDB)
-	fmt.Printf("mongodb err: %+v\n", err)
-	if err != nil {
-		panic(err)
-	}*/
 
 	// Start rest server
 	e.Logger.Fatal(e.Start(constants.RestPort))

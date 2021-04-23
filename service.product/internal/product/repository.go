@@ -1,8 +1,12 @@
 package product
 
 import (
+	"context"
+	"fmt"
 	"github.com/labstack/echo/v4"
-	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 // Repository db repository
@@ -21,11 +25,11 @@ type Repository interface {
 }
 
 type repository struct {
-	db dbcontext.DB
+	db *mongo.Database
 }
 
 // NewRepository returns a new repostory
-func NewRepository(db dbcontext.DB) Repository {
+func NewRepository(db *mongo.Database) Repository {
 	return &repository{db}
 }
 
@@ -34,6 +38,14 @@ func (r repository) Get(c echo.Context, id int64) (pro product, err error) {
 }
 
 func (r repository) Create(c echo.Context, title string, amount, stock int) (id int64, err error) {
+	collection := r.db.Collection("product")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	res, err := collection.InsertOne(ctx, bson.D{{"title", title}})
+	if err != nil {
+		return id, err
+	}
+	fmt.Println(res.InsertedID)
 	return id, nil
 }
 

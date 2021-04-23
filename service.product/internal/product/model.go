@@ -2,14 +2,11 @@ package product
 
 import "time"
 
-// product is a simple model, without sku/attribute/category.
+// product models product
 type product struct {
-	ID    int64  `db:"id"`
-	Title string `db:"title"`
-	// product's price amount
-	Amount int `db:"amount"`
-	// product's stock value
-	Stock     int       `db:"stock"`
+	Title       string `db:"title"`
+	Description string `db:"description"`
+
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }

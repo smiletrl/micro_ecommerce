@@ -43,6 +43,7 @@ type RedisConfig struct {
 }
 
 type MongodbConfig struct {
+	Name     string
 	Host     string
 	Port     string
 	User     string
@@ -151,6 +152,22 @@ func Load(stage string) (Config, error) {
 	}
 	if c.Redis.Port == "" {
 		c.Redis.Port = os.Getenv("REDIS_PORT")
+	}
+	// mongoDB
+	if c.MongoDB.Name == "" {
+		c.MongoDB.Name = os.Getenv("MONGODB_NAME")
+	}
+	if c.MongoDB.Host == "" {
+		c.MongoDB.Host = os.Getenv("MONGODB_HOST")
+	}
+	if c.MongoDB.Port == "" {
+		c.MongoDB.Port = os.Getenv("MONGODB_PORT")
+	}
+	if c.MongoDB.User == "" {
+		c.MongoDB.User = os.Getenv("MONGODB_USER")
+	}
+	if c.MongoDB.Password == "" {
+		c.MongoDB.Password = os.Getenv("MONGODB_PASSWORD")
 	}
 	// rocketmq
 	if c.RocketMQ.Host == "" {
