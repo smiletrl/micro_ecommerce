@@ -2,6 +2,7 @@ package cart
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"strconv"
@@ -59,9 +60,14 @@ func (s service) Get(c echo.Context) (cart []cartItem, err error) {
 	j := 0
 
 	for _, property := range properties {
-		quantity, err := strconv.Atoi(items[property.SkuID])
+		// double check before using this sku property
+		rawQuantity, ok := items[property.SkuID]
+		if !ok {
+			continue
+		}
+		quantity, err := strconv.Atoi(rawQuantity)
 		if err != nil {
-			return cart, err
+			return cart, errors.Wrapf(errorsd.New("error converting sku quantity to int"), "error converting sku quantity: %s", err.Error())
 		}
 		valid := true
 		// if sku stock is less than sku quantity in cart, then this cart item
@@ -76,6 +82,10 @@ func (s service) Get(c echo.Context) (cart []cartItem, err error) {
 		}
 		j++
 	}
+
+	// @todo, add the deleted sku id item to response.
+	// It's possible that one sku from cart has been deleted in system, then
+	// cart should probably tell user this cart item doesn't exist any more.
 
 	return cart, err
 }
