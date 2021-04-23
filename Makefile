@@ -4,13 +4,13 @@ run-test:
 	- STAGE=local go test ./...
 
 db-start:
-	- cd build && docker-compose up -d
+	- cd build && docker compose up -d
 
 db-restart:
-	- cd build && docker-compose down && docker-compose up -d
+	- cd build && docker compose down && docker compose up -d
 
 db-stop:
-	- docker-compose down
+	- cd build && docker compose down
 
 db-reset:
 	- soda reset

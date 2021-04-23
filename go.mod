@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/gobuffalo/pop/v5 v5.3.1
 	github.com/golang-migrate/migrate/v4 v4.14.1
@@ -13,6 +14,8 @@ require (
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/medivhzhan/weapp v1.5.1
+	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/gomega v1.10.4
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
 	go.mongodb.org/mongo-driver v1.1.0

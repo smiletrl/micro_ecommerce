@@ -54,7 +54,7 @@ func (r repository) Create(c echo.Context, customerID int64, skuID string, quant
 		if err != nil {
 			return err
 		}
-		_, err = r.rdb.HSet(context.Background(), skuID, currentQuantity+quantity).Result()
+		_, err = r.rdb.HSet(context.Background(), key, skuID, currentQuantity+quantity).Result()
 		if err != nil {
 			return err
 		}
