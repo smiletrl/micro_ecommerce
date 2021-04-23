@@ -17,6 +17,7 @@ db-reset:
 
 build-cart:
 	- docker build -t micro_ecommerce/service_cart:dev . -f service.cart/Dockerfile
+	- docker scan micro_ecommerce/service_cart:dev
 	- docker login
 	- docker tag micro_ecommerce/service_cart:dev docker.io/smiletrl/micro_ecommerce_cart:dev
 	- docker push docker.io/smiletrl/micro_ecommerce_cart:dev
@@ -47,6 +48,18 @@ build-payment:
 	- docker login
 	- docker tag micro_ecommerce/service_payment:dev docker.io/smiletrl/micro_ecommerce_payment:dev
 	- docker push docker.io/smiletrl/micro_ecommerce_payment:dev
+
+# restart local one service like: make restart-svc svc=cart
+restart-svc:
+	- kubectl rollout restart deployment/$(svc) --namespace=dev
+
+# build local one service like: make build-svc svc=cart
+build-svc:
+	- docker build -t micro_ecommerce/service_$(svc):dev . -f service.$(svc)/Dockerfile
+	- docker scan micro_ecommerce/service_$(svc):dev
+	- docker login
+	- docker tag micro_ecommerce/service_$(svc):dev docker.io/smiletrl/micro_ecommerce_$(svc):dev
+	- docker push docker.io/smiletrl/micro_ecommerce_$(svc):dev
 
 local-build: build-cart build-customer build-product build-order build-payment
 

@@ -7,6 +7,9 @@ const (
 	// StageLocal stage local
 	StageLocal string = "local"
 
-	// StageGithub stage local
+	// StageGithub stage local k8s env
+	StageK8s string = "k8s"
+
+	// StageGithub stage github
 	StageGithub string = "github"
 )
