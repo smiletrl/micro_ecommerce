@@ -12,6 +12,7 @@ import (
 	_ "github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
+	"go.uber.org/zap"
 	"os"
 )
 
@@ -35,19 +36,23 @@ func main() {
 	}
 	healthcheck.RegisterHandlers(e.Group(""))
 
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	sugar := logger.Sugar()
+
 	// redis
 	redisClient := redis.New(config)
 
 	jwtService := jwt.NewService(config.JwtSecret)
 
 	// Product rpc client. Inject config
-	pclient := productClient.NewClient()
+	pclient := productClient.NewClient(sugar)
 
 	// cart
 	cartRepo := cart.NewRepository(redisClient)
 
 	productProxy := product{pclient}
-	cartService := cart.NewService(cartRepo, productProxy)
+	cartService := cart.NewService(cartRepo, productProxy, sugar)
 	cart.RegisterHandlers(echoGroup, cartService, jwtService)
 
 	// Start server
