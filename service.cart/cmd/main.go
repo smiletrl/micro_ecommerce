@@ -60,6 +60,7 @@ type product struct {
 }
 
 func (p product) GetSkuStock(c echo.Context, skuID string) (int, error) {
+	// maybe we want to add timeout for this request in case this request just hangs on.
 	return p.client.GetSkuStock(c, skuID)
 }
 

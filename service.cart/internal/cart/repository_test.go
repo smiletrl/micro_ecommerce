@@ -5,8 +5,6 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -42,9 +40,7 @@ var _ = Describe("cart repository methods", func() {
 		repo = NewRepository(redis.Test(config))
 
 		e := echo.New()
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		rec := httptest.NewRecorder()
-		c = e.NewContext(req, rec)
+		c = e.NewContext(nil, nil)
 	})
 
 	Context("with Delete & Create & Get & Update cart item", func() {

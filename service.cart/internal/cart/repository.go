@@ -1,7 +1,6 @@
 package cart
 
 import (
-	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
@@ -30,7 +29,7 @@ func NewRepository(rdb *redis.Client) Repository {
 
 func (r repository) Get(c echo.Context, customerID int64) (items map[string]string, err error) {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	result, err := r.rdb.HGetAll(context.Background(), key).Result()
+	result, err := r.rdb.HGetAll(c.Request().Context(), key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return items, nil
@@ -41,20 +40,21 @@ func (r repository) Get(c echo.Context, customerID int64) (items map[string]stri
 }
 
 func (r repository) Create(c echo.Context, customerID int64, skuID string, quantity int) error {
+	ctx := c.Request().Context()
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
 	// if this sku doesn't exist, create a new hash
-	if isExisting := r.rdb.HExists(context.Background(), key, skuID).Val(); !isExisting {
-		_, err := r.rdb.HSet(context.Background(), key, skuID, quantity).Result()
+	if isExisting := r.rdb.HExists(ctx, key, skuID).Val(); !isExisting {
+		_, err := r.rdb.HSet(ctx, key, skuID, quantity).Result()
 		if err != nil {
 			return err
 		}
 	} else {
 		// increase the sku quantity in cart
-		currentQuantity, err := r.rdb.HGet(context.Background(), key, skuID).Int()
+		currentQuantity, err := r.rdb.HGet(ctx, key, skuID).Int()
 		if err != nil {
 			return err
 		}
-		_, err = r.rdb.HSet(context.Background(), key, skuID, currentQuantity+quantity).Result()
+		_, err = r.rdb.HSet(ctx, key, skuID, currentQuantity+quantity).Result()
 		if err != nil {
 			return err
 		}
@@ -64,12 +64,12 @@ func (r repository) Create(c echo.Context, customerID int64, skuID string, quant
 
 func (r repository) Update(c echo.Context, customerID int64, skuID string, quantity int) error {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	_, err := r.rdb.HSet(context.Background(), key, skuID, quantity).Result()
+	_, err := r.rdb.HSet(c.Request().Context(), key, skuID, quantity).Result()
 	return err
 }
 
 func (r repository) Delete(c echo.Context, customerID int64, skuID string) error {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	_, err := r.rdb.HDel(context.Background(), key, skuID).Result()
+	_, err := r.rdb.HDel(c.Request().Context(), key, skuID).Result()
 	return err
 }

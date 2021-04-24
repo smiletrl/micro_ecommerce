@@ -1,7 +1,6 @@
 package external
 
 import (
-	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
@@ -9,7 +8,6 @@ import (
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
 	"google.golang.org/grpc"
-	"time"
 )
 
 type Client interface {
@@ -46,10 +44,8 @@ func newConnection() pb.ProductClient {
 
 func (c client) GetSkuStock(eContext echo.Context, skuID string) (stock int, err error) {
 	c.grpc = newConnection()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 
-	pbstock, err := c.grpc.GetSkuStock(ctx, &pb.SkuID{Value: skuID})
+	pbstock, err := c.grpc.GetSkuStock(eContext.Request().Context(), &pb.SkuID{Value: skuID})
 	if err != nil {
 		return stock, errors.Wrapf(errorsd.New("error getting sku stock from rpc"), "error getting sku stock from rpc: %s", err.Error())
 	}
@@ -59,10 +55,8 @@ func (c client) GetSkuStock(eContext echo.Context, skuID string) (stock int, err
 
 func (c client) GetSkuProperties(eContext echo.Context, skuIDs []string) (properties []entity.SkuProperty, err error) {
 	c.grpc = newConnection()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 
-	gProperties, err := c.grpc.GetSkuProperties(ctx, &pb.SkuIDs{Value: skuIDs})
+	gProperties, err := c.grpc.GetSkuProperties(eContext.Request().Context(), &pb.SkuIDs{Value: skuIDs})
 	if err != nil {
 		return nil, errors.Wrapf(errorsd.New("error getting sku properties from rpc"), "error getting sku properties from rpc: %s", err.Error())
 	}
