@@ -19,3 +19,12 @@ func CustomerMiddleware(jwtService jwt.Service) echo.MiddlewareFunc {
 		}
 	}
 }
+
+func AdminMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// @todo add admin jwt token
+			return next(c)
+		}
+	}
+}

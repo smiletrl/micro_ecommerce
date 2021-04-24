@@ -1,7 +1,86 @@
 ## Product
-Product provides both Rest Server & gRPC Server. Rest server is for external http request. gRPC server is for internal service sync communication.
+This service is a simple implementation for product.
 
-It uses database mongoDB to build product catalog (to be implemented).
+### DB schema
+It uses database mongoDB to build product catalog. MongoDB is selected for its dynamic schema to provide great flexiblity for product skus/attributes. 
+
+Product doc
+```
+{
+    "_id": "123abc",
+    "title": "Pretty mac",
+    "body": "This mac was made in USA and it was for children."
+    "category": "/computer/mac", // 
+    "assets": {
+        "ppt": [ // different asset types.
+            {
+                "src": "xxx.png"
+            },
+            {
+                "src": "xxx.png"
+            }
+        ],
+        "thumbnail": {
+            "src": "xxx.png"
+        }
+    },
+    "variants": { // holds the product variants configuration.
+        "attrs": [ // each variant should have these attrs value.
+            {
+                "name": "Color"
+            },
+            {
+                "name": "Memory"
+            }
+        ]
+    },
+    "createdAt": 123231212,
+    "updatedAt": 131223482
+}
+```
+
+SKU/Variant doc
+```
+// attr value can be manually added at edit screen, or be selected from predefined attr list.
+// by making use of mongoDB, we want to allow user to manually add new attr, instead of selecting from a predefined list.
+{
+    "_id": "12231212",
+    "productId": "123abc",
+    "assets": {
+        "img": "xx.png",
+    },
+    "attrs": [
+        {
+            "name": "Color",
+            "value": "Red" // value could be added manually at edit screen.
+        },
+        {
+            "name": "Memory",
+            "value": "32GB"
+        }
+    ],
+    "price": "8900", // actual value is 89.00. In real env, price could deserve its own doc.
+    "stock": "69" // stock number for this sku. In real env, stock could deserve its own doc.
+}
+```
+
+Category taxonomy doc
+```
+{
+    "_id": "123bbb",
+    "name": "computer",
+    "parent": "1212",
+}
+
+{
+    "_id": "123ccc",
+    "name": "mac",
+    "parent": "1212",
+}
+```
+
+### Rest & gRPC server
+Product provides both Rest Server & gRPC Server. Rest server is for external http request. gRPC server is for internal service sync communication.
 
 - gRPC server is registered at `rpcserver.Register()` from `cmd/main.go`. See more at `internal/rpc`.
 - Rest server is like other services.

@@ -1,21 +1,18 @@
 package product
 
 import (
-	"context"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
 // Repository db repository
 type Repository interface {
 	// get product
-	Get(c echo.Context, id int64) (pro product, err error)
+	Get(c echo.Context, id int64) (prod product, err error)
 
 	// create new product
-	Create(c echo.Context, title string, amount, stock int) (id int64, err error)
+	Create(c echo.Context, prod product) (id string, err error)
 
 	// update product
 	Update(c echo.Context, id int64, title string, amount, stock int) error
@@ -37,15 +34,19 @@ func (r repository) Get(c echo.Context, id int64) (pro product, err error) {
 	return pro, err
 }
 
-func (r repository) Create(c echo.Context, title string, amount, stock int) (id int64, err error) {
+func (r repository) Create(c echo.Context, prod product) (id string, err error) {
+	// @todo add product validation
 	collection := r.db.Collection("product")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	res, err := collection.InsertOne(ctx, bson.D{{"title", title}})
+	ctx := c.Request().Context()
+	res, err := collection.InsertOne(ctx, bson.D{
+		{"title", prod.Title},
+		{"body", prod.Body},
+		{"category", prod.Category},
+		{"variants", prod.Variants}})
 	if err != nil {
 		return id, err
 	}
-	fmt.Println(res.InsertedID)
+	id = res.InsertedID.(string)
 	return id, nil
 }
 

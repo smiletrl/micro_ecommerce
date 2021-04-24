@@ -10,7 +10,7 @@ type Service interface {
 	Get(c echo.Context, id int64) (pro product, err error)
 
 	// create new product
-	Create(c echo.Context, title string, amount, stock int) (id int64, err error)
+	Create(c echo.Context, prod product) (id string, err error)
 
 	// update product
 	Update(c echo.Context, id int64, title string, amount, stock int) error
@@ -33,8 +33,8 @@ func (s *service) Get(c echo.Context, id int64) (pro product, err error) {
 	return s.repo.Get(c, id)
 }
 
-func (s *service) Create(c echo.Context, title string, amount, stock int) (id int64, err error) {
-	return s.repo.Create(c, title, amount, stock)
+func (s *service) Create(c echo.Context, prod product) (id string, err error) {
+	return s.repo.Create(c, prod)
 }
 
 func (s *service) Update(c echo.Context, id int64, title string, amount, stock int) error {

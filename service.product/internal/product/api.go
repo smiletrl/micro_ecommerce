@@ -3,6 +3,7 @@ package product
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
+	"github.com/smiletrl/micro_ecommerce/pkg/auth"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 
 	"net/http"
@@ -13,15 +14,16 @@ import (
 func RegisterHandlers(r *echo.Group, service Service) {
 	res := &resource{service}
 
-	productGroup := r.Group("/product")
+	adminGroup := r.Group("/product")
+	adminGroup.Use(auth.AdminMiddleware())
 
-	productGroup.GET("/:id", res.Get)
+	adminGroup.GET("/:id", res.Get)
 
-	productGroup.POST("", res.Create)
+	adminGroup.POST("", res.Create)
 
-	productGroup.PUT("/:id", res.Update)
+	adminGroup.PUT("/:id", res.Update)
 
-	productGroup.DELETE("/:id", res.Delete)
+	adminGroup.DELETE("/:id", res.Delete)
 }
 
 type resource struct {
@@ -52,13 +54,11 @@ func (r resource) Get(c echo.Context) error {
 }
 
 type createRequest struct {
-	Title  string `json:"title"`
-	Amount int    `json:"amount"`
-	Stock  int    `json:"stock"`
+	Product product `json:"product"`
 }
 
 type createResponse struct {
-	ID int64 `json:"id"`
+	ID string `json:"id"`
 }
 
 func (r resource) Create(c echo.Context) error {
@@ -66,7 +66,7 @@ func (r resource) Create(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error creating request product"), "error binding creating product request: %s", err.Error()))
 	}
-	id, err := r.service.Create(c, req.Title, req.Amount, req.Stock)
+	id, err := r.service.Create(c, req.Product)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating product"), "error creating product: %s", err.Error()))
 	}
