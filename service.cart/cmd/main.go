@@ -17,13 +17,18 @@ import (
 )
 
 func main() {
-	// Echo instance
+	// echo instance
 	e := echo.New()
 	echoGroup := e.Group("/api/v1")
 
-	// Middleware
+	// middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// init logger
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	sugar := logger.Sugar()
 
 	// initialize service
 	stage := os.Getenv(constants.Stage)
@@ -36,16 +41,12 @@ func main() {
 	}
 	healthcheck.RegisterHandlers(e.Group(""))
 
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	sugar := logger.Sugar()
-
 	// redis
 	redisClient := redis.New(config)
 
 	jwtService := jwt.NewService(config.JwtSecret)
 
-	// Product rpc client. Inject config
+	// product rpc client. Inject config
 	pclient := productClient.NewClient(sugar)
 
 	// cart

@@ -9,6 +9,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/balance"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/customer"
+	"go.uber.org/zap"
 	"os"
 )
 
@@ -20,6 +21,11 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// init logger
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	sugar := logger.Sugar()
 
 	// initialize service
 	stage := os.Getenv(constants.Stage)
@@ -39,7 +45,7 @@ func main() {
 
 	// balance
 	balanceRepo := balance.NewRepository(db)
-	balanceService := balance.NewService(balanceRepo)
+	balanceService := balance.NewService(balanceRepo, sugar)
 	balance.RegisterHandlers(echoGroup, balanceService)
 
 	err = balance.Consume(config.RocketMQ)
@@ -49,7 +55,7 @@ func main() {
 
 	// customer
 	customerRepo := customer.NewRepository(db)
-	customerService := customer.NewService(customerRepo)
+	customerService := customer.NewService(customerRepo, sugar)
 	customer.RegisterHandlers(echoGroup, customerService)
 
 	// Start server

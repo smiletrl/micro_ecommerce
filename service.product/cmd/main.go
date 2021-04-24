@@ -9,6 +9,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/mongodb"
 	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
 	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/server"
+	"go.uber.org/zap"
 	"os"
 )
 
@@ -20,6 +21,11 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// init logger
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	sugar := logger.Sugar()
 
 	// initialize service
 	stage := os.Getenv(constants.Stage)
@@ -40,7 +46,7 @@ func main() {
 
 	// product
 	productRepo := product.NewRepository(db)
-	productService := product.NewService(productRepo)
+	productService := product.NewService(productRepo, sugar)
 	product.RegisterHandlers(echoGroup, productService)
 
 	err = product.Consume(config.RocketMQ)

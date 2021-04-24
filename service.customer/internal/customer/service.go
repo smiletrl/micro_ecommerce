@@ -2,6 +2,7 @@ package customer
 
 import (
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 // Service is cutomer service
@@ -19,12 +20,13 @@ type Service interface {
 }
 
 type service struct {
-	repo Repository
+	repo   Repository
+	logger *zap.SugaredLogger
 }
 
 // NewService is to create new service
-func NewService(repo Repository) Service {
-	return &service{repo}
+func NewService(repo Repository, logger *zap.SugaredLogger) Service {
+	return &service{repo, logger}
 }
 
 func (s *service) Get(c echo.Context, id int64) (cus customer, err error) {
