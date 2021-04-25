@@ -71,7 +71,7 @@ Check below links for service details. These services are not real functional, b
 
 - [Customer](https://github.com/smiletrl/micro_ecommerce/tree/master/service.customer), Golang & PostgreSQL
 - [Cart](https://github.com/smiletrl/micro_ecommerce/tree/master/service.cart), Golang & Redis
-- [Product](https://github.com/smiletrl/micro_ecommerce/tree/master/service.product) Golang & MongoDB
+- [Product](https://github.com/smiletrl/micro_ecommerce/tree/master/service.product) Golang & MongoDB & gRPC Server.
 - [Order](https://github.com/smiletrl/micro_ecommerce/tree/master/service.order), Golang
 - [Payment](https://github.com/smiletrl/micro_ecommerce/tree/master/service.payment), Golang
 
