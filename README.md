@@ -40,7 +40,8 @@ For people who are new, but interested in micro service, this project is suppose
 - gRPC for sync communication between micro services to provide low latency internal service response.
 - RocketMQ for async communication to decouple services to focus on individual service development.
 - Terraform configuration for local development & deployment. It's supposed to be easily to be migrated to an online cloud environment, such as AWS.
-- Detailed documentation is on the way^
+
+<b>Note:</b> The main purpose of this project is for micro service architecture demonstration. While different service configuration and code in this project might be a good sample start, every technology will need optimization in real production environments to fit in different project needs, and ecommerce requirements.
 
 ### UI Result
 After installment of this project in local, try sending a few sample api requests
@@ -66,7 +67,7 @@ Services include following at this moment. Different service might use different
 
 Three databases are used at this moment, Redis, PostgresSQL, MongoDB(to be implemented).
 
-Check below links for service details. These services are not complete now, but should provide a basic idea on the way. More is coming^
+Check below links for service details. These services are not complete now, but should provide a basic idea on the way.
 
 - [Customer](https://github.com/smiletrl/micro_ecommerce/tree/master/service.customer)
 - [Cart](https://github.com/smiletrl/micro_ecommerce/tree/master/service.cart)
