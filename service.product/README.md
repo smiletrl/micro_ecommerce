@@ -39,7 +39,7 @@ Product doc
 }
 ```
 
-SKU/Variant doc
+Sku/Variant doc
 ```
 // attr value can be manually added at edit screen, or be selected from predefined attr list.
 // by making use of mongoDB, we want to allow user to manually add new attr, instead of selecting from a predefined list.
@@ -47,7 +47,14 @@ SKU/Variant doc
     "_id": "12231212",
     "productId": "123abc",
     "assets": {
-        "img": "xx.png",
+        "ppt":[ // different asset types.
+            {
+                "src": "xxx.png"
+            },
+            {
+                "src": "xxx.png"
+            }
+        ],
     },
     "attrs": [
         {

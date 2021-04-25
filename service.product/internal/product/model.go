@@ -14,6 +14,10 @@ type product struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+type ID struct {
+	ID string `json:"id"`
+}
+
 type productAssets struct {
 	PPT       []image `json:"ppt"`
 	Thumbnail image   `json:"thumbnail"`

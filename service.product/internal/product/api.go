@@ -7,7 +7,6 @@ import (
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 
 	"net/http"
-	"strconv"
 )
 
 // RegisterHandlers for product
@@ -39,12 +38,7 @@ type getResponse struct {
 }
 
 func (r resource) Get(c echo.Context) error {
-	id := c.Param("id")
-	idInt64, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
-	}
-	cus, err := r.service.Get(c, idInt64)
+	cus, err := r.service.Get(c, c.Param("id"))
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error getting product"), "error getting product: %s", err.Error()))
 	}
@@ -54,53 +48,56 @@ func (r resource) Get(c echo.Context) error {
 }
 
 type createRequest struct {
-	Product product `json:"product"`
+	Title    string        `json:"title"`
+	Body     string        `json:"body"`
+	Category string        `json:"category"`
+	Assets   productAssets `json:"assets"`
+	Variants variantConfig `json:"variants"`
 }
 
 type createResponse struct {
-	ID string `json:"id"`
+	Data ID `json:"data"`
 }
 
 func (r resource) Create(c echo.Context) error {
 	req := new(createRequest)
 	if err := c.Bind(req); err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error creating request product"), "error binding creating product request: %s", err.Error()))
+		return errorsd.BadRequest(c, err)
 	}
-	id, err := r.service.Create(c, req.Product)
+
+	id, err := r.service.Create(c, *req)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating product"), "error creating product: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, createResponse{
-		ID: id,
+		Data: ID{ID: id},
 	})
 }
 
 type updateRequest struct {
-	Title  string `json:"title"`
-	Amount int    `json:"amount"`
-	Stock  int    `json:"stock"`
+	Title    string        `json:"title"`
+	Body     string        `json:"body"`
+	Category string        `json:"category"`
+	Assets   productAssets `json:"assets"`
+	Variants variantConfig `json:"variants"`
 }
 
 type updateResponse struct {
-	Data string `json:"data"`
+	Data ID `json:"data"`
 }
 
 func (r resource) Update(c echo.Context) error {
 	id := c.Param("id")
-	idInt64, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
-	}
 	req := new(updateRequest)
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error updating request product id"), "error binding updating product request: %s", err.Error()))
 	}
-	err = r.service.Update(c, idInt64, req.Title, req.Amount, req.Stock)
+	err := r.service.Update(c, id, *req)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error updating product"), "error updating product: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, updateResponse{
-		Data: "ok",
+		Data: ID{ID: id},
 	})
 }
 
@@ -113,12 +110,7 @@ type deleteResponse struct {
 }
 
 func (r resource) Delete(c echo.Context) error {
-	id := c.Param("id")
-	idInt64, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
-	}
-	err = r.service.Delete(c, idInt64)
+	err := r.service.Delete(c, c.Param("id"))
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error deleting product"), "error deleting product: %s", err.Error()))
 	}

@@ -2,58 +2,112 @@ package product
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
+	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Repository db repository
 type Repository interface {
 	// get product
-	Get(c echo.Context, id int64) (prod product, err error)
+	Get(c echo.Context, id string) (prod product, err error)
 
 	// create new product
-	Create(c echo.Context, prod product) (id string, err error)
+	Create(c echo.Context, req createRequest) (id string, err error)
 
 	// update product
-	Update(c echo.Context, id int64, title string, amount, stock int) error
+	Update(c echo.Context, id string, req updateRequest) error
 
 	// delete product
-	Delete(c echo.Context, id int64) error
+	Delete(c echo.Context, id string) error
 }
 
 type repository struct {
-	db *mongo.Database
+	mdb *mongo.Database
 }
 
 // NewRepository returns a new repostory
-func NewRepository(db *mongo.Database) Repository {
-	return &repository{db}
+func NewRepository(mdb *mongo.Database) Repository {
+	return repository{mdb}
 }
 
-func (r repository) Get(c echo.Context, id int64) (pro product, err error) {
-	return pro, err
+func (r repository) Get(c echo.Context, id string) (prod product, err error) {
+	collection := r.mdb.Collection("product")
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return prod, err
+	}
+
+	var prodM bson.M
+	ctx := c.Request().Context()
+	if err := collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&prodM); err != nil {
+		return prod, errors.Wrapf(errorsd.New("error getting product in db"), "error getting product in db: %s", err.Error())
+	}
+	bsonBytes, _ := bson.Marshal(prodM)
+	bson.Unmarshal(bsonBytes, &prod)
+	return prod, err
 }
 
-func (r repository) Create(c echo.Context, prod product) (id string, err error) {
-	// @todo add product validation
-	collection := r.db.Collection("product")
+func (r repository) Create(c echo.Context, req createRequest) (id string, err error) {
+	// @todo add product/category validation
+	collection := r.mdb.Collection("product")
 	ctx := c.Request().Context()
 	res, err := collection.InsertOne(ctx, bson.D{
-		{"title", prod.Title},
-		{"body", prod.Body},
-		{"category", prod.Category},
-		{"variants", prod.Variants}})
+		{"title", req.Title},
+		{"body", req.Body},
+		{"category", req.Category},
+		{"assets", req.Assets},
+		{"variants", req.Variants}})
 	if err != nil {
-		return id, err
+		return id, errors.Wrapf(errorsd.New("error inserting product in db"), "error inserting product in db: %s", err.Error())
 	}
-	id = res.InsertedID.(string)
-	return id, nil
+
+	// now insert the skus for this product
+
+	objectID := res.InsertedID.(primitive.ObjectID)
+
+	return objectID.Hex(), nil
 }
 
-func (r repository) Update(c echo.Context, id int64, title string, amount, stock int) error {
+func (r repository) Update(c echo.Context, id string, req updateRequest) error {
+	collection := r.mdb.Collection("product")
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	ctx := c.Request().Context()
+	_, err = collection.UpdateOne(
+		ctx,
+		bson.M{"_id": objectID},
+		bson.D{
+			{"$set", bson.D{
+				{"title", req.Title},
+				{"body", req.Body},
+				{"category", req.Category},
+				{"assets", req.Assets},
+				{"variants", req.Variants}}}})
+	if err != nil {
+		return errors.Wrapf(errorsd.New("error updating product in db"), "error updating product in db: %s", err.Error())
+	}
 	return nil
 }
 
-func (r repository) Delete(c echo.Context, id int64) error {
+func (r repository) Delete(c echo.Context, id string) error {
+	collection := r.mdb.Collection("product")
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	ctx := c.Request().Context()
+	_, err = collection.DeleteOne(
+		ctx,
+		bson.M{"_id": objectID})
+	if err != nil {
+		return errors.Wrapf(errorsd.New("error deleting product in db"), "error deleting product in db: %s", err.Error())
+	}
 	return nil
 }
