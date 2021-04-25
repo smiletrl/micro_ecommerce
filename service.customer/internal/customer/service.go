@@ -34,11 +34,11 @@ func (s *service) Get(c echo.Context, id int64) (cus customer, err error) {
 }
 
 func (s *service) Create(c echo.Context, email, firstName, lastName string) (id int64, err error) {
-	return s.repo.Create(c, email)
+	return s.repo.Create(c, email, firstName, lastName)
 }
 
 func (s *service) Update(c echo.Context, id int64, email, firstName, lastName string) error {
-	return s.repo.Update(c, id, email)
+	return s.repo.Update(c, id, email, firstName, lastName)
 }
 
 func (s *service) Delete(c echo.Context, id int64) error {

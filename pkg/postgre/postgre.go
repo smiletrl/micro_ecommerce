@@ -1,4 +1,4 @@
-package dbcontext
+package postgre
 
 import (
 	"context"
@@ -8,19 +8,18 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/migration"
 )
 
-// DB adds some wrappers around standard sqlx functionality
 type DB interface {
 	Query(c echo.Context, sql string, args ...interface{}) (pgx.Rows, error)
 	QueryRow(c echo.Context, sql string, args ...interface{}) pgx.Row
 	Exec(c echo.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
 }
 
-type dbcontext struct {
+type db struct {
 	DB *pgxpool.Pool
 }
 
@@ -38,29 +37,29 @@ func InitDB(cfg config.Config) (DB, error) {
 		panic(err)
 	}
 
-	return NewDBContext(dbpool), nil
+	return NewDB(dbpool), nil
 }
 
-// NewDBContext returns a new eps db wrapper around an sqlx.DB
-func NewDBContext(db *pgxpool.Pool) DB {
-	return &dbcontext{db}
+// NewDB returns a new postgresql db
+func NewDB(pdb *pgxpool.Pool) DB {
+	return &db{pdb}
 }
 
-func (db *dbcontext) RawDB() *pgxpool.Pool {
+func (db *db) RawDB() *pgxpool.Pool {
 	return db.DB
 }
 
-func (db *dbcontext) Query(c echo.Context, sql string, args ...interface{}) (pgx.Rows, error) {
+func (db *db) Query(c echo.Context, sql string, args ...interface{}) (pgx.Rows, error) {
 	// @todo add tracing later to monitor the performance
 	return db.DB.Query(c.Request().Context(), sql, args...)
 }
 
-func (db *dbcontext) QueryRow(c echo.Context, sql string, args ...interface{}) pgx.Row {
+func (db *db) QueryRow(c echo.Context, sql string, args ...interface{}) pgx.Row {
 	// @todo add tracing later to monitor the performance
 	return db.DB.QueryRow(c.Request().Context(), sql, args...)
 }
 
-func (db *dbcontext) Exec(c echo.Context, sql string, args ...interface{}) (pgconn.CommandTag, error) {
+func (db *db) Exec(c echo.Context, sql string, args ...interface{}) (pgconn.CommandTag, error) {
 	// @todo add tracing later to monitor the performance
 	return db.DB.Exec(c.Request().Context(), sql, args...)
 }

@@ -2,7 +2,7 @@ package payment
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgre"
 )
 
 // Repository db repository
@@ -11,11 +11,11 @@ type Repository interface {
 }
 
 type repository struct {
-	db dbcontext.DB
+	db postgre.DB
 }
 
 // NewRepository returns a new repostory
-func NewRepository(db dbcontext.DB) Repository {
+func NewRepository(db postgre.DB) Repository {
 	return repository{db}
 }
 

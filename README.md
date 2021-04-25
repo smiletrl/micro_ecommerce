@@ -67,13 +67,13 @@ Services include following at this moment. Different service might use different
 
 Three databases are used at this moment, Redis, PostgresSQL, MongoDB(to be implemented).
 
-Check below links for service details. These services are not complete now, but should provide a basic idea on the way.
+Check below links for service details. These services are not real functional, but should provide a basic idea on the way.
 
-- [Customer](https://github.com/smiletrl/micro_ecommerce/tree/master/service.customer)
-- [Cart](https://github.com/smiletrl/micro_ecommerce/tree/master/service.cart)
-- [Product](https://github.com/smiletrl/micro_ecommerce/tree/master/service.product)
-- [Order](https://github.com/smiletrl/micro_ecommerce/tree/master/service.order)
-- [Payment](https://github.com/smiletrl/micro_ecommerce/tree/master/service.payment)
+- [Customer](https://github.com/smiletrl/micro_ecommerce/tree/master/service.customer), Golang & PostgreSQL
+- [Cart](https://github.com/smiletrl/micro_ecommerce/tree/master/service.cart), Golang & Redis
+- [Product](https://github.com/smiletrl/micro_ecommerce/tree/master/service.product) Golang & MongoDB
+- [Order](https://github.com/smiletrl/micro_ecommerce/tree/master/service.order) Golang
+- [Payment](https://github.com/smiletrl/micro_ecommerce/tree/master/service.payment) Golang
 
 ### Local Installment, development & deployment
 - Install [Docker](https://www.docker.com/)

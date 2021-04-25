@@ -5,8 +5,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/smiletrl/micro_ecommerce/pkg/dbcontext"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgre"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/balance"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/customer"
 	"go.uber.org/zap"
@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db, err := dbcontext.InitDB(config)
+	db, err := postgre.InitDB(config)
 	if err != nil {
 		panic(err)
 	}

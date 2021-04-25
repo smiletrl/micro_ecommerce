@@ -75,9 +75,9 @@ func (r resource) Create(c echo.Context) error {
 }
 
 type updateRequest struct {
-	Email     string `db:"email"`
-	FirstName string `db:"first_name"`
-	LastName  string `db:"last_name"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 }
 
 type updateResponse struct {
