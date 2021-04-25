@@ -20,7 +20,8 @@ An ecommerce application with micro service infrastructure
 ### Technical Stack
 - [Golang >= 1.14](https://golang.org/)
 - [PostgreSQL](https://www.postgresql.org/)
-- [Pgx](https://github.com/JackC/pgx)
+- [MongoDB](https://www.mongodb.com/)
+- [Redis](https://redis.io/)
 - [gRPC](https://github.com/grpc/grpc-go)
 - [MiniKube](https://minikube.sigs.k8s.io/docs/start/)
 - [Kubernetes](https://kubernetes.io/)
