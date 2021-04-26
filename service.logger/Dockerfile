@@ -21,7 +21,7 @@ COPY --from=builder /usr/local/go/lib/time/zoneinfo.zip /zoneinfo.zip
 ENV ZONEINFO /zoneinfo.zip
 
 COPY --from=builder /build/config /app/config
-COPY --from=builder /build/service-order /app/service-order
+COPY --from=builder /build/service-logger /app/service-logger
 COPY --from=builder /build/migrations /app/migrations
 
-CMD ["./service-order"]
+CMD ["./service-logger"]
