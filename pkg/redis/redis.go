@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"strings"
 	"time"
 )
 
@@ -41,7 +42,7 @@ func New(cfg config.Config) *redis.Client {
 
 // Test creates the second redis database client
 func Test(cfg config.Config) *redis.Client {
-	if cfg.Stage == constants.StageGithub {
+	if strings.Contains(cfg.Stage, constants.StageGithub) {
 		return DB(cfg, 0)
 	}
 	return DB(cfg, 1)
