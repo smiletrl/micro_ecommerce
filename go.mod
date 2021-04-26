@@ -17,6 +17,7 @@ require (
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.4
 	github.com/pkg/errors v0.9.1
+	github.com/segmentio/kafka-go v0.4.15
 	github.com/stretchr/testify v1.6.1
 	go.mongodb.org/mongo-driver v1.1.0
 	go.uber.org/zap v1.10.0

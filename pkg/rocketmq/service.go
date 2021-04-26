@@ -13,13 +13,12 @@ import (
 )
 
 type Service interface {
-	CreateTopic(topic constants.RocketMQTopic) error
-	CreateProducer(group constants.RocketMQGroup) (rocketmq.Producer, error)
-	CreatePushConsumer(group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
+	CreateTopic(ctx context.Context, topic constants.RocketMQTopic) error
+	CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error)
+	CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
 }
 
 func NewService(cfg config.RocketMQConfig) Service {
-
 	return service{
 		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
 		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
@@ -31,21 +30,21 @@ type service struct {
 	brokerAddress string
 }
 
-func (s service) CreateTopic(topic constants.RocketMQTopic) error {
+func (s service) CreateTopic(ctx context.Context, topic constants.RocketMQTopic) error {
 	// check if this topic existing already
 	topicAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(s.serverAddress)))
 	if err != nil {
 		panic(err)
 	}
 	err = topicAdmin.CreateTopic(
-		context.Background(),
+		ctx,
 		admin.WithTopicCreate(string(topic)),
 		admin.WithBrokerAddrCreate(s.brokerAddress),
 	)
 	return err
 }
 
-func (s service) CreateProducer(group constants.RocketMQGroup) (rocketmq.Producer, error) {
+func (s service) CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error) {
 	p, err := rocketmq.NewProducer(
 		producer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
 		producer.WithRetry(2),
@@ -61,7 +60,7 @@ func (s service) CreateProducer(group constants.RocketMQGroup) (rocketmq.Produce
 	return p, nil
 }
 
-func (s service) CreatePushConsumer(group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error) {
+func (s service) CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error) {
 	c, err := rocketmq.NewPushConsumer(
 		consumer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
 		consumer.WithGroupName(string(group)),
@@ -78,6 +77,7 @@ func (s service) CreatePushConsumer(group constants.RocketMQGroup, model consume
 	return c, nil
 }
 
+/*
 func Start(cfg config.RocketMQConfig) {
 	var err error
 
@@ -139,3 +139,4 @@ func Start(cfg config.RocketMQConfig) {
 		return consumer.ConsumeSuccess, nil
 	})
 }
+*/

@@ -19,6 +19,7 @@ type Config struct {
 	Cloud         CloudConfig
 	Redis         RedisConfig
 	RocketMQ      RocketMQConfig
+	Kafka         KafkaConfig
 	MongoDB       MongodbConfig
 	Stage         string
 	JwtSecret     string `yaml:"jwt_secret"`
@@ -54,6 +55,11 @@ type RocketMQConfig struct {
 	Host           string `yaml:"host"`
 	NameServerPort string `yaml:"name_server_port"`
 	BrokerPort     string `yaml:"broker_port"`
+}
+
+type KafkaConfig struct {
+	Host string
+	Port string
 }
 
 // CloudConfig is cloud config
@@ -178,6 +184,13 @@ func Load(stage string) (Config, error) {
 	}
 	if c.RocketMQ.BrokerPort == "" {
 		c.RocketMQ.BrokerPort = os.Getenv("ROCKETMQ_BROKER_PORT")
+	}
+	// kafka
+	if c.Kafka.Host == "" {
+		c.Kafka.Host = os.Getenv("KAFKA_HOST")
+	}
+	if c.Kafka.Port == "" {
+		c.Kafka.Port = os.Getenv("KAFKA_PORT")
 	}
 
 	return c, nil

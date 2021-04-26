@@ -29,7 +29,7 @@ type resource struct {
 }
 
 func newResource(service Service, rocketMQ rocketmq.Service) resource {
-	p, err := rocketMQ.CreateProducer(constants.RocketMQGroupPayment)
+	p, err := rocketMQ.CreateProducer(context.Background(), constants.RocketMQGroupPayment)
 	if err != nil {
 		panic(err)
 	}
@@ -66,6 +66,7 @@ func (r resource) Create(c echo.Context) error {
 }
 
 func (r resource) WechatPayCallback(c echo.Context) error {
+	ctx := c.Request().Context()
 	w := c.Response().Writer
 	req := c.Request()
 	err := wePayment.HandlePaidNotify(w, req, func(ntf wePayment.PaidNotify) (bool, string) {
@@ -74,7 +75,7 @@ func (r resource) WechatPayCallback(c echo.Context) error {
 		// @todo move these tags to constants
 		// order service will subscribe to this.
 		message := rocketmq.CreateMessage(constants.RocketMQTopicPayment, constants.RocketMQTag("Pay Succeed||order"), "order_id:xxx")
-		_, err := r.rocketProducer.SendSync(context.Background(), message)
+		_, err := r.rocketProducer.SendSync(ctx, message)
 		if err != nil {
 			panic(err)
 		}
@@ -82,7 +83,7 @@ func (r resource) WechatPayCallback(c echo.Context) error {
 		// product service will subscribe to this.
 		// product will reduce the stock value.
 		message = rocketmq.CreateMessage(constants.RocketMQTopicPayment, constants.RocketMQTag("Pay Succeed||product||sku||quantity"), "sku_id:xxx||quantity:xxx")
-		_, err = r.rocketProducer.SendSync(context.Background(), message)
+		_, err = r.rocketProducer.SendSync(ctx, message)
 		if err != nil {
 			panic(err)
 		}
@@ -90,7 +91,7 @@ func (r resource) WechatPayCallback(c echo.Context) error {
 		// customer service will subscribe to this.
 		// if this payment type/method is `balance`, customer's balance should be reduced.
 		message = rocketmq.CreateMessage(constants.RocketMQTopicPayment, constants.RocketMQTag("Pay Succeed||method||customer||balance"), "customer_id:xxx||amount:xxx")
-		_, err = r.rocketProducer.SendSync(context.Background(), message)
+		_, err = r.rocketProducer.SendSync(ctx, message)
 		if err != nil {
 			panic(err)
 		}
