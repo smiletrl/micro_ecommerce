@@ -47,6 +47,6 @@ jobs:
           POSTGRE_DB_PORT: 5432
           POSTGRE_DB_CONN_STRING: postgres://postgres:password@localhost:5432/ecommerce?sslmode=disable
           MIGRATION_PATH: ${{ github.workspace }}/migrations
-          REDIS_ENDPOINT: redis
+          REDIS_ENDPOINT: localhost
           REDIS_PASSWORD: 123456
           REDIS_PORT: 6379
