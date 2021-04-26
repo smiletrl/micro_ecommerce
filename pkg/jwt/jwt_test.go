@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewCustomerToken(t *testing.T) {
-	s := NewService("secret")
+	s := NewProvider("secret")
 	token, err := s.NewCustomerToken(int64(12))
 	assert.Nil(t, err)
 	assert.NotEmpty(t, token)
