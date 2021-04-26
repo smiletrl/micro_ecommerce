@@ -49,7 +49,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	jwtService := jwt.NewService(config.JwtSecret)
+	jwtService := jwt.NewProvider(config.JwtSecret)
 
 	// kafka message
 	err = loggerd.Consume(config.Kafka, sugar, topic, partition)

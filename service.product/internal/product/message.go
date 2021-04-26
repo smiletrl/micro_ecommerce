@@ -11,7 +11,7 @@ import (
 )
 
 func Consume(cfg config.RocketMQConfig) error {
-	rocket := rocketmq.NewService(cfg)
+	rocket := rocketmq.NewProvider(cfg)
 	c, err := rocket.CreatePushConsumer(context.Background(), constants.RocketMQGroupPayment, consumer.Clustering)
 	if err != nil {
 		return err

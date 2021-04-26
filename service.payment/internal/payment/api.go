@@ -14,7 +14,7 @@ import (
 )
 
 // RegisterHandlers for routes
-func RegisterHandlers(r *echo.Group, service Service, rocketMQ rocketmq.Service) {
+func RegisterHandlers(r *echo.Group, service Service, rocketMQ rocketmq.Provider) {
 	res := newResource(service, rocketMQ)
 
 	productGroup := r.Group("/payment")
@@ -28,7 +28,7 @@ type resource struct {
 	rocketProducer mq.Producer
 }
 
-func newResource(service Service, rocketMQ rocketmq.Service) resource {
+func newResource(service Service, rocketMQ rocketmq.Provider) resource {
 	p, err := rocketMQ.CreateProducer(context.Background(), constants.RocketMQGroupPayment)
 	if err != nil {
 		panic(err)

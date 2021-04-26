@@ -12,57 +12,57 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 )
 
-type Service interface {
+type Provider interface {
 	CreateTopic(ctx context.Context, topic constants.RocketMQTopic) error
 	CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error)
 	CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
 }
 
-func NewService(cfg config.RocketMQConfig) Service {
-	return service{
+func NewProvider(cfg config.RocketMQConfig) Provider {
+	return provider{
 		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
 		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
 	}
 }
 
-type service struct {
+type provider struct {
 	serverAddress []string
 	brokerAddress string
 }
 
-func (s service) CreateTopic(ctx context.Context, topic constants.RocketMQTopic) error {
+func (p provider) CreateTopic(ctx context.Context, topic constants.RocketMQTopic) error {
 	// check if this topic existing already
-	topicAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(s.serverAddress)))
+	topicAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(p.serverAddress)))
 	if err != nil {
 		panic(err)
 	}
 	err = topicAdmin.CreateTopic(
 		ctx,
 		admin.WithTopicCreate(string(topic)),
-		admin.WithBrokerAddrCreate(s.brokerAddress),
+		admin.WithBrokerAddrCreate(p.brokerAddress),
 	)
 	return err
 }
 
-func (s service) CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error) {
-	p, err := rocketmq.NewProducer(
-		producer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
+func (p provider) CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error) {
+	producer, err := rocketmq.NewProducer(
+		producer.WithNsResolver(primitive.NewPassthroughResolver(p.serverAddress)),
 		producer.WithRetry(2),
 		producer.WithGroupName(string(group)),
 	)
 	if err != nil {
 		return nil, err
 	}
-	err = p.Start()
+	err = producer.Start()
 	if err != nil {
 		return nil, err
 	}
-	return p, nil
+	return producer, nil
 }
 
-func (s service) CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error) {
+func (p provider) CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error) {
 	c, err := rocketmq.NewPushConsumer(
-		consumer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
+		consumer.WithNsResolver(primitive.NewPassthroughResolver(p.serverAddress)),
 		consumer.WithGroupName(string(group)),
 		// model needs to be set after group name somehow to make topic filter working.
 		consumer.WithConsumerModel(model),
@@ -89,21 +89,21 @@ func Start(cfg config.RocketMQConfig) {
 	fmt.Printf("rocketmq service: %+v\n", s)
 
 	// topic
-	testAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(s.serverAddress)))
+	testAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(p.serverAddress)))
 	if err != nil {
 		panic(err)
 	}
 	err = testAdmin.CreateTopic(
 		context.Background(),
 		admin.WithTopicCreate("jack"),
-		admin.WithBrokerAddrCreate(s.brokerAddress),
+		admin.WithBrokerAddrCreate(p.brokerAddress),
 	)
 	if err != nil {
 		panic(err)
 	}
 	// producer
 	p, err := rocketmq.NewProducer(
-		producer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
+		producer.WithNsResolver(primitive.NewPassthroughResolver(p.serverAddress)),
 		producer.WithRetry(2),
 		producer.WithGroupName("GID_test"),
 	)
@@ -125,7 +125,7 @@ func Start(cfg config.RocketMQConfig) {
 
 	// consumer
 	c, err := rocketmq.NewPushConsumer(
-		consumer.WithNsResolver(primitive.NewPassthroughResolver(s.serverAddress)),
+		consumer.WithNsResolver(primitive.NewPassthroughResolver(p.serverAddress)),
 		consumer.WithGroupName("GID_test"),
 		// model needs to be set after group name somehow to make topic filter working.
 		consumer.WithConsumerModel(consumer.Clustering),

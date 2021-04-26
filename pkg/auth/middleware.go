@@ -6,10 +6,10 @@ import (
 	_ "net/http"
 )
 
-func CustomerMiddleware(jwtService jwt.Service) echo.MiddlewareFunc {
+func CustomerMiddleware(jwtProvider jwt.Provider) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			//customerID, err := jwtService.ParseCustomerToken(c)
+			//customerID, err := jwtProvider.ParseCustomerToken(c)
 			//if err != nil {
 			//return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 			//}

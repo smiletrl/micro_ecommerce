@@ -41,11 +41,11 @@ func main() {
 	paymentRepo := payment.NewRepository(db)
 	paymentService := payment.NewService(paymentRepo)
 
-	rocketMQService := rocketmq.NewService(config.RocketMQ)
-	if err = rocketMQService.CreateTopic(context.Background(), constants.RocketMQTopicPayment); err != nil {
+	rocketMQProvider := rocketmq.NewProvider(config.RocketMQ)
+	if err = rocketMQProvider.CreateTopic(context.Background(), constants.RocketMQTopicPayment); err != nil {
 		panic(err)
 	}
-	payment.RegisterHandlers(echoGroup, paymentService, rocketMQService)
+	payment.RegisterHandlers(echoGroup, paymentService, rocketMQProvider)
 
 	// Start rest server
 	e.Logger.Fatal(e.Start(constants.RestPort))

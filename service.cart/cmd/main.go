@@ -44,7 +44,7 @@ func main() {
 	// redis
 	redisClient := redis.New(config)
 
-	jwtService := jwt.NewService(config.JwtSecret)
+	jwtService := jwt.NewProvider(config.JwtSecret)
 
 	// product rpc client. Inject config
 	pclient := productClient.NewClient(sugar)

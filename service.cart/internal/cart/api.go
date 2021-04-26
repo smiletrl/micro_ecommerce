@@ -9,7 +9,7 @@ import (
 )
 
 // RegisterHandlers for handlers
-func RegisterHandlers(r *echo.Group, service Service, jwt jwt.Service) {
+func RegisterHandlers(r *echo.Group, service Service, jwt jwt.Provider) {
 	res := &resource{service}
 
 	group := r.Group("/cart")
