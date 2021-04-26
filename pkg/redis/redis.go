@@ -19,11 +19,11 @@ func DB(cfg config.Config, position int) *redis.Client {
 		DB:       position,
 	}
 	stage := cfg.Stage
-	if stage == constants.StageProd {
-		redisOptions.TLSConfig = &tls.Config{
-			InsecureSkipVerify: false,
-		}
+	//if stage == constants.StageProd {
+	redisOptions.TLSConfig = &tls.Config{
+		InsecureSkipVerify: false,
 	}
+	//}
 
 	rdb := redis.NewClient(redisOptions)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
