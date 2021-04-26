@@ -28,6 +28,7 @@ An ecommerce application with micro service infrastructure
 - [Istio](https://istio.io/)
 - [Terraform](https://www.terraform.io/)
 - [RocketMQ](https://rocketmq.apache.org/)
+- [Kafka](https://kafka.apache.org/)
 
 ### Background
 This project shows a simple ecommerce app running based on micro service architecture. It could run in a local environment with miniKube for local development. The primary language is Golang for these micro services. Kubernetes & istio are used for service register & discovery.
@@ -73,7 +74,10 @@ Check below links for service details. These services are not real functional, b
 - [Cart](https://github.com/smiletrl/micro_ecommerce/tree/master/service.cart), Golang & Redis
 - [Product](https://github.com/smiletrl/micro_ecommerce/tree/master/service.product) Golang & MongoDB & gRPC Server
 - [Order](https://github.com/smiletrl/micro_ecommerce/tree/master/service.order), Golang
-- [Payment](https://github.com/smiletrl/micro_ecommerce/tree/master/service.payment), Golang
+- [Payment](https://github.com/smiletrl/micro_ecommerce/tree/master/service.payment), Golang & RocketMQ
+- [Logger](https://github.com/smiletrl/micro_ecommerce/tree/master/service.logger), Golang & Kafka
+
+According to some big Chinese Companies(Alibaba, [Didi, 2018](https://developer.aliyun.com/article/664608)) reports, kafka could perform poorly when kafka topic numebr has increased above 256. This project is for ecommerce, which has pretty similar business logic like alibaba, so RocketMQ is picked for regular business logic process, while kafka is recommended for log process.
 
 ### Local Installment, development & deployment
 - Install [Docker](https://www.docker.com/)
