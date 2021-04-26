@@ -25,7 +25,7 @@ type db struct {
 
 // InitDB is to inti db
 func InitDB(cfg config.Config) (DB, error) {
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Postgre.User, cfg.Postgre.Password, cfg.Postgre.Host, cfg.Postgre.Port, cfg.Postgre.Name)
 
 	dbpool, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {

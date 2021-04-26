@@ -24,7 +24,10 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// init logger
-	logger, _ := zap.NewProduction()
+	logger, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
 	defer logger.Sync()
 	sugar := logger.Sugar()
 
@@ -49,7 +52,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	jwtService := jwt.NewProvider(config.JwtSecret)
+	jwtProvider := jwt.NewProvider(config.JwtSecret)
 
 	// kafka message
 	err = loggerd.Consume(config.Kafka, sugar, topic, partition)
@@ -58,7 +61,7 @@ func main() {
 	}
 	loggerRepo := loggerd.NewRepository(kafkaProvider)
 	loggerService := loggerd.NewService(loggerRepo, sugar)
-	loggerd.RegisterHandlers(echoGroup, loggerService, jwtService)
+	loggerd.RegisterHandlers(echoGroup, loggerService, jwtProvider)
 
 	// Start server
 	e.Logger.Fatal(e.Start(constants.RestPort))

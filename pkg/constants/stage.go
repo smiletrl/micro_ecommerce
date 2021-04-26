@@ -12,4 +12,7 @@ const (
 
 	// StageGithub stage github
 	StageGithub string = "github"
+
+	// StageProd stage prod
+	StageProd string = "prod"
 )

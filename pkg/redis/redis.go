@@ -2,10 +2,10 @@ package redis
 
 import (
 	"context"
-	_ "crypto/tls"
+	"crypto/tls"
 	"github.com/go-redis/redis/v8"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"time"
 )
 
@@ -17,12 +17,12 @@ func DB(cfg config.Config, position int) *redis.Client {
 		Password: cfg.Redis.Password,
 		DB:       position,
 	}
-	//stage := cfg.Stage
-	//if stage != constants.StageLocal && stage != constants.StageGithub && stage != constants.StageK8s {
-	//redisOptions.TLSConfig = &tls.Config{
-	//	InsecureSkipVerify: false,
-	//}
-	//}
+	stage := cfg.Stage
+	if stage == constants.StageProd {
+		redisOptions.TLSConfig = &tls.Config{
+			InsecureSkipVerify: false,
+		}
+	}
 
 	rdb := redis.NewClient(redisOptions)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -41,5 +41,8 @@ func New(cfg config.Config) *redis.Client {
 
 // Test creates the second redis database client
 func Test(cfg config.Config) *redis.Client {
+	if cfg.Stage == constants.StageGithub {
+		return DB(cfg, 0)
+	}
 	return DB(cfg, 1)
 }
