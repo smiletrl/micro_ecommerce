@@ -8,6 +8,9 @@ jobs:
       redis:
         # Docker Hub image
         image: redis
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
         #env:
           #REDIS_PASSWORD: 123456
         # Set health checks to wait until redis has started
@@ -50,4 +53,4 @@ jobs:
           MIGRATION_PATH: ${{ github.workspace }}/migrations
           REDIS_HOST: localhost
           REDIS_PASSWORD: ""
-          REDIS_PORT: 6380
+          REDIS_PORT: 6379
