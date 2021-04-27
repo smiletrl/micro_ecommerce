@@ -3,6 +3,7 @@ name: Test
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: golang:1.16.3-alpine3.13
     services:
       redis:
         # Docker Hub image
@@ -30,10 +31,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.14.13
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Test
@@ -47,6 +44,6 @@ jobs:
           POSTGRE_DB_PORT: 5432
           POSTGRE_DB_CONN_STRING: postgres://postgres:password@localhost:5432/ecommerce?sslmode=disable
           MIGRATION_PATH: ${{ github.workspace }}/migrations
-          REDIS_HOST: localhost
+          REDIS_HOST: redis
           REDIS_PASSWORD: ""
           REDIS_PORT: 6379
