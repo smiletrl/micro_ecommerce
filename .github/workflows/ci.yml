@@ -7,8 +7,8 @@ jobs:
       redis:
         # Docker Hub image
         image: redis
-        env:
-          REDIS_PASSWORD: 123456
+        #env:
+          #REDIS_PASSWORD: 123456
         # Set health checks to wait until redis has started
         options: >-
           --health-cmd "redis-cli ping"
