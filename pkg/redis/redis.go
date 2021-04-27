@@ -28,7 +28,7 @@ func DB(cfg config.Config, position int) *redis.Client {
 	}
 
 	rdb := redis.NewClient(redisOptions)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	if _, err := rdb.Ping(ctx).Result(); err != nil {
