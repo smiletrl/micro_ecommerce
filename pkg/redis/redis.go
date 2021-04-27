@@ -16,7 +16,7 @@ func DB(cfg config.Config, position int) *redis.Client {
 	fmt.Printf("Redis config: %s, positon:%d\n", cfg.Redis, position)
 	// redis service
 	redisOptions := &redis.Options{
-		Addr:     cfg.Redis.Endpoint + ":" + cfg.Redis.Port,
+		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
 		Password: cfg.Redis.Password,
 		DB:       position,
 	}

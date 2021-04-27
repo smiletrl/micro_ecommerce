@@ -22,7 +22,7 @@ mongodb:
   user: root
   password: "password"
 redis:
-  endpoint: "127.0.0.1"
+  host: "127.0.0.1"
   password: "123456"
   port: "6380"
 jwt_secret: "secret"

@@ -37,7 +37,7 @@ type PostgreConfig struct {
 
 // RedisConfig redis config
 type RedisConfig struct {
-	Endpoint string
+	Host     string
 	Password string
 	Port     string
 }
@@ -136,8 +136,8 @@ func Load(stage string) (Config, error) {
 		c.MigrationPath = os.Getenv("MIGRATION_PATH")
 	}
 	// redis
-	if c.Redis.Endpoint == "" {
-		c.Redis.Endpoint = os.Getenv("REDIS_ENDPOINT")
+	if c.Redis.Host == "" {
+		c.Redis.Host = os.Getenv("REDIS_HOST")
 	}
 	if c.Redis.Password == "" {
 		c.Redis.Password = os.Getenv("REDIS_PASSWORD")

@@ -22,7 +22,7 @@ mongodb:
   user: root
   password: "password"
 redis:
-  endpoint: "minikube-host.default.svc.cluster.local"
+  host: "minikube-host.default.svc.cluster.local"
   password: "123456"
   port: "6380"
 jwt_secret: "secret"
