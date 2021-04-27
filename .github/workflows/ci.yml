@@ -50,4 +50,4 @@ jobs:
           MIGRATION_PATH: ${{ github.workspace }}/migrations
           REDIS_HOST: localhost
           REDIS_PASSWORD: ""
-          REDIS_PORT: 6379
+          REDIS_PORT: 6380
