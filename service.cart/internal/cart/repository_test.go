@@ -44,6 +44,7 @@ var _ = Describe("cart repository methods", func() {
 		c = e.NewContext(req, w)
 
 		skuID = "sku_abc"
+		customerID = int64(12)
 	})
 
 	Context("with Delete & Create & Get & Update cart item", func() {
@@ -51,7 +52,6 @@ var _ = Describe("cart repository methods", func() {
 
 		BeforeEach(func() {
 			// delete this cart item
-			customerID = int64(1)
 			quantity = 8
 			// clean this sku id firstly.
 			err = repo.Delete(c, customerID, skuID)
@@ -69,8 +69,6 @@ var _ = Describe("cart repository methods", func() {
 
 		Context("with more items to be increased with Create", func() {
 			BeforeEach(func() {
-				customerID = int64(12)
-				skuID = "sku_abc"
 				quantity = 10
 				err = repo.Create(c, customerID, skuID, quantity)
 			})
@@ -79,14 +77,12 @@ var _ = Describe("cart repository methods", func() {
 				Expect(err).To(BeNil())
 				items, err = repo.Get(c, customerID)
 				Expect(err).To(BeNil())
-				Expect(items[skuID]).To(BeEquivalentTo("10"))
+				Expect(items[skuID]).To(BeEquivalentTo("18"))
 			})
 
 			// now update cart
 			Context("with items to be updated with Create", func() {
 				BeforeEach(func() {
-					customerID = int64(12)
-					skuID = "sku_abc"
 					quantity = 29
 					err = repo.Update(c, customerID, skuID, quantity)
 				})
@@ -101,8 +97,6 @@ var _ = Describe("cart repository methods", func() {
 				// now delete cart
 				Context("with items to be deleted with Create", func() {
 					BeforeEach(func() {
-						customerID = int64(12)
-						skuID = "sku_abc"
 						quantity = 29
 						err = repo.Delete(c, customerID, skuID)
 					})
