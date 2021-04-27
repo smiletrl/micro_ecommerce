@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
-	"os"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -29,12 +28,11 @@ func InitDB(cfg config.Config) (DB, error) {
 
 	dbpool, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	if err := migration.MigrateUp(cfg); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return NewDB(dbpool), nil
