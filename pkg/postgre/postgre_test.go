@@ -1,4 +1,4 @@
-package postgres
+package postgre
 
 import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -17,5 +17,5 @@ func TestInitDB(t *testing.T) {
 	assert.NoError(t, err)
 	db, err := InitDB(cfg)
 	assert.NoError(t, err)
-	assert.NotNil(t, client)
+	assert.NotNil(t, db)
 }
