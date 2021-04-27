@@ -12,7 +12,7 @@ jobs:
           # Maps port 6379 on service container to the host
           - 6379:6379
         env:
-          #REDIS_PASSWORD: 123456
+          REDIS_PASSWORD: 123456
         # Set health checks to wait until redis has started
         options: >-
           --health-cmd "redis-cli ping"
