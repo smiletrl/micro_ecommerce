@@ -13,7 +13,7 @@ import (
 
 // DB creates a new redis client
 func DB(cfg config.Config, position int) *redis.Client {
-	fmt.Printf("Redis config: %s, positon:%d\n", cfg.Redis, position)
+	fmt.Printf("Redis config: %+v, positon:%d\n", cfg.Redis, position)
 	// redis service
 	redisOptions := &redis.Options{
 		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
