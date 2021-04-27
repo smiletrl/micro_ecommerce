@@ -11,7 +11,7 @@ jobs:
         ports:
           # Maps port 6379 on service container to the host
           - 6379:6379
-        #env:
+        env:
           #REDIS_PASSWORD: 123456
         # Set health checks to wait until redis has started
         options: >-
@@ -52,5 +52,5 @@ jobs:
           POSTGRE_DB_CONN_STRING: postgres://postgres:password@localhost:5432/ecommerce?sslmode=disable
           MIGRATION_PATH: ${{ github.workspace }}/migrations
           REDIS_HOST: localhost
-          REDIS_PASSWORD: ""
+          REDIS_PASSWORD: 123456
           REDIS_PORT: 6379
