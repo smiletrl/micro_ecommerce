@@ -21,7 +21,7 @@ func DB(cfg config.Config, position int) *redis.Client {
 		DB:       position,
 	}
 	stage := cfg.Stage
-	if stage == constants.StageProd || strings.Contains(cfg.Stage, constants.StageGithub) {
+	if stage == constants.StageProd {
 		redisOptions.TLSConfig = &tls.Config{
 			InsecureSkipVerify: false,
 		}
