@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
@@ -12,6 +13,7 @@ import (
 
 // DB creates a new redis client
 func DB(cfg config.Config, position int) *redis.Client {
+	fmt.Printf("Redis config: %s, positon:%d\n", cfg.Redis, position)
 	// redis service
 	redisOptions := &redis.Options{
 		Addr:     cfg.Redis.Endpoint + ":" + cfg.Redis.Port,
