@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
+	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"strconv"
 )
 
@@ -15,7 +16,7 @@ type Repository interface {
 
 	Update(c echo.Context, customerID int64, skuID string, quantity int) error
 
-	Delete(c echo.Context, customerID int64, skuID string) error
+	Delete(c echo.Context, customerID int64, skuID ...string) error
 }
 
 type repository struct {
@@ -68,8 +69,12 @@ func (r repository) Update(c echo.Context, customerID int64, skuID string, quant
 	return err
 }
 
-func (r repository) Delete(c echo.Context, customerID int64, skuID string) error {
+func (r repository) Delete(c echo.Context, customerID int64, skuID ...string) error {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	_, err := r.rdb.HDel(c.Request().Context(), key, skuID).Result()
+	var err error
+	if len(skuID) == 0 {
+		return errorsd.New("at least one sku id is required")
+	}
+	_, err = r.rdb.HDel(c.Request().Context(), key, skuID...).Result()
 	return err
 }

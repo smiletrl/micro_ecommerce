@@ -5,6 +5,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -34,13 +35,15 @@ var _ = Describe("cart repository methods", func() {
 			stage = constants.StageLocal
 		}
 		config, err := config.Load(stage)
-		if err != nil {
-			panic(err)
-		}
+		Expect(err).To(BeNil())
 		repo = NewRepository(redis.Test(config))
 
 		e := echo.New()
-		c = e.NewContext(nil, nil)
+		req := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+		c = e.NewContext(req, w)
+
+		skuID = "sku_abc"
 	})
 
 	Context("with Delete & Create & Get & Update cart item", func() {
@@ -48,8 +51,7 @@ var _ = Describe("cart repository methods", func() {
 
 		BeforeEach(func() {
 			// delete this cart item
-			customerID = int64(12)
-			skuID = "sku_abc"
+			customerID = int64(1)
 			quantity = 8
 			// clean this sku id firstly.
 			err = repo.Delete(c, customerID, skuID)
@@ -62,9 +64,7 @@ var _ = Describe("cart repository methods", func() {
 			Expect(err).To(BeNil())
 			items, err = repo.Get(c, customerID)
 			Expect(err).To(BeNil())
-			Expect(items).To(BeEquivalentTo(map[string]string{
-				"sku_abc": "8",
-			}))
+			Expect(items[skuID]).To(BeEquivalentTo("8"))
 		})
 
 		Context("with more items to be increased with Create", func() {
@@ -79,9 +79,7 @@ var _ = Describe("cart repository methods", func() {
 				Expect(err).To(BeNil())
 				items, err = repo.Get(c, customerID)
 				Expect(err).To(BeNil())
-				Expect(items).To(BeEquivalentTo(map[string]string{
-					"sku_abc": "18",
-				}))
+				Expect(items[skuID]).To(BeEquivalentTo("10"))
 			})
 
 			// now update cart
@@ -97,13 +95,11 @@ var _ = Describe("cart repository methods", func() {
 					Expect(err).To(BeNil())
 					items, err = repo.Get(c, customerID)
 					Expect(err).To(BeNil())
-					Expect(items).To(BeEquivalentTo(map[string]string{
-						"sku_abc": "29",
-					}))
+					Expect(items[skuID]).To(BeEquivalentTo("29"))
 				})
 
 				// now delete cart
-				Context("with items to be updated with Create", func() {
+				Context("with items to be deleted with Create", func() {
 					BeforeEach(func() {
 						customerID = int64(12)
 						skuID = "sku_abc"
@@ -115,7 +111,8 @@ var _ = Describe("cart repository methods", func() {
 						Expect(err).To(BeNil())
 						items, err = repo.Get(c, customerID)
 						Expect(err).To(BeNil())
-						Expect(items).To(BeEquivalentTo(map[string]string{}))
+						_, ok := items[skuID]
+						Expect(ok).To(BeFalse())
 					})
 				})
 			})
