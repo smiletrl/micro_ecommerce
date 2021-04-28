@@ -2,7 +2,11 @@
 This service is a simple implementation for product.
 
 ### DB schema
-It uses database mongoDB to build product catalog. MongoDB is selected for its dynamic schema to provide great flexiblity for product skus/attributes. 
+It uses database mongoDB to build product catalog. MongoDB is selected for its dynamic schema to provide great flexiblity for product skus/attributes.
+
+One example is this app might have over 10 thousands types/categories of products. Each type will have its own specific fields/properties. In a SQL database, we might need to create 10 thousands customized tables to hold each product type's customized fields. With MongoDB, one collection/document is enough to hold all product types.
+
+While the benefit of NO-SQL DB for this product service shines, the disadvantage is also pretty clear. Need to be careful with the unsupported transaction operations. The future potential of SQL relation requirement for products data may grow too. I have seen a few companies switched to NO-SQL, and then switched back to SQL again.
 
 Product doc
 ```

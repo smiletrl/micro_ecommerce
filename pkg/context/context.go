@@ -5,6 +5,8 @@ import (
 )
 
 // CustomContext is our customized context wrapper of echo context
+// @todo remove this one. The default echo.Context is able to handle most cases
+// already
 type Context interface {
 	GetCustomerID() int64
 	SetCustomerID(id int64)

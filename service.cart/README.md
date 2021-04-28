@@ -1,5 +1,7 @@
 ## Cart
-Cart is a simple cart implementation, using redis to provide high performance update.
+Cart is a simple cart implementation, using redis to provide high performance update. Based on experience, cart item change is pretty frequent operation. Redis is a better solution than SQL DB in this case.
+
+The trade-off is redis needs additiontional configuration to enable data persistence. Even with persistence enabled, there's still chance that data could be lost.
 
 Redis uses hash to store customer cart data
 

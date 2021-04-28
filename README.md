@@ -126,20 +126,21 @@ github.com/smiletrl/micro_service
 |   |-- 2021xxxx.down.sql
 |   |-- 2021xxxx.up.sql
 |-- pkg
-|   |-- cache
+|   |-- auth
 |   |-- config
 |   |-- constants
 |   |-- context
 |   |-- entity
 |   |-- errors
 |   |-- healthcheck
+|   |-- jwt
+|   |-- kafka
 |   |-- migration
 |   |-- mongodb
+|   |-- postgre
+|   |-- redis
 |   |-- rocketmq
 |   |-- test
-|-- redis
-|   |-- config
-|   |   |-- redis.conf
 |-- service.cart
 |-- service.customer
 |-- service.order
