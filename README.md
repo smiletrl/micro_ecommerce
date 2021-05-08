@@ -6,6 +6,7 @@ An ecommerce application with micro service infrastructure
 - [Reference](#reference)
 - [Technical Stack](#technical-stack)
 - [Background](#background)
+- [Alternative](#alternative)
 - [UI Result](#ui-result)
 - [Services](#services)
 - [Local Installment, development & deployment](#local-installment-development--deployment)
@@ -43,6 +44,12 @@ For people who are new, but interested in micro service, this project is suppose
 - Terraform configuration for local development & deployment. It's supposed to be easily to be migrated to an online cloud environment, such as AWS.
 
 <b>Note:</b> The main purpose of this project is for micro service architecture demonstration. While different service configuration and code in this project might be a good sample start, every technology will need optimization in real production environments to fit in different project needs, and ecommerce requirements.
+
+### Alternative
+There're alternative framework solutions, which bring both advantage and disadvantage. If you are not afraid of the verbose concepts in these frameworks, check them below.
+
+- [Go kit](https://github.com/go-kit/kit)
+- [Go micro](https://github.com/asim/go-micro)
 
 ### UI Result
 After installment of this project in local, try sending a few sample api requests
