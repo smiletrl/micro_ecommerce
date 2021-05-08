@@ -56,7 +56,10 @@ func main() {
 
 	// start grpc server
 	go func() {
-		rpcserver.Register()
+		err = rpcserver.Register(sugar)
+		if err != nil {
+			panic(err)
+		}
 	}()
 
 	// Start rest server

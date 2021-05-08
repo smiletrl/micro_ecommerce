@@ -4,23 +4,41 @@ import (
 	"context"
 	"log"
 	"net"
+	"time"
 
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 // Register the rpc server for product service.
-func Register() {
+func Register(logger *zap.SugaredLogger) error {
 	lis, err := net.Listen("tcp", constants.GrpcPort)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Errorf("error listening tcp connection for product grpc: %s", err.Error())
+		return err
 	}
-	s := grpc.NewServer()
+	var kaep = keepalive.EnforcementPolicy{
+		MinTime:             5 * time.Second, // If a client pings more than once every 5 seconds, terminate the connection
+		PermitWithoutStream: true,            // Allow pings even when there are no active streams
+	}
+
+	var kasp = keepalive.ServerParameters{
+		MaxConnectionIdle:     15 * time.Second, // If a client is idle for 15 seconds, send a GOAWAY
+		MaxConnectionAge:      30 * time.Second, // If any connection is alive for more than 30 seconds, send a GOAWAY
+		MaxConnectionAgeGrace: 5 * time.Second,  // Allow 5 seconds for pending RPCs to complete before forcibly closing connections
+		Time:                  5 * time.Second,  // Ping the client if it is idle for 5 seconds to ensure the connection is still active
+		Timeout:               1 * time.Second,  // Wait 1 second for the ping ack before assuming the connection is dead
+	}
+	s := grpc.NewServer(grpc.KeepaliveEnforcementPolicy(kaep), grpc.KeepaliveParams(kasp))
 	pb.RegisterProductServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		logger.Errorf("error serving tcp connection for product grpc: %s", err.Error())
+		return err
 	}
+	return nil
 }
 
 // server is rpc server for product

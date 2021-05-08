@@ -25,4 +25,6 @@ redis:
   host: "minikube-host.default.svc.cluster.local"
   password: "123456"
   port: "6380"
+internal_server:
+  product: product
 jwt_secret: "secret"

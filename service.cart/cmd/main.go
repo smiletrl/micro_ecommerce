@@ -46,8 +46,11 @@ func main() {
 
 	jwtService := jwt.NewProvider(config.JwtSecret)
 
-	// product rpc client. Inject config
-	pclient := productClient.NewClient(sugar)
+	// product grpc client.
+	pclient, err := productClient.NewClient(config.InternalServer.Product, sugar)
+	if err != nil {
+		panic(err)
+	}
 
 	// cart
 	cartRepo := cart.NewRepository(redisClient)
@@ -57,7 +60,9 @@ func main() {
 	cart.RegisterHandlers(echoGroup, cartService, jwtService)
 
 	// Start server
-	e.Logger.Fatal(e.Start(constants.RestPort))
+	if err = e.Start(constants.RestPort); err != nil {
+		panic(err)
+	}
 }
 
 // product proxy
@@ -66,10 +71,9 @@ type product struct {
 }
 
 func (p product) GetSkuStock(c echo.Context, skuID string) (int, error) {
-	// maybe we want to add timeout for this request in case this request just hangs on.
-	return p.client.GetSkuStock(c, skuID)
+	return p.client.GetSkuStock(c.Request().Context(), skuID)
 }
 
 func (p product) GetSkuProperties(c echo.Context, skuIDs []string) ([]entity.SkuProperty, error) {
-	return p.client.GetSkuProperties(c, skuIDs)
+	return p.client.GetSkuProperties(c.Request().Context(), skuIDs)
 }

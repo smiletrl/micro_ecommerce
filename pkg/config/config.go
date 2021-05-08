@@ -20,6 +20,7 @@ type Config struct {
 	RocketMQ          RocketMQConfig
 	Kafka             KafkaConfig
 	MongoDB           MongodbConfig
+	InternalServer    InternalServer `yaml:"internal_server"`
 	Stage             string
 	JwtSecret         string `yaml:"jwt_secret"`
 	MigrationPath     string `yaml:"migration_path"`
@@ -33,6 +34,10 @@ type PostgreConfig struct {
 	Host     string
 	Port     string
 	SSLMode  string
+}
+
+type InternalServer struct {
+	Product string
 }
 
 // RedisConfig redis config
@@ -160,6 +165,9 @@ func Load(stage string) (Config, error) {
 	}
 	if c.MongoDB.Password == "" {
 		c.MongoDB.Password = os.Getenv("MONGODB_PASSWORD")
+	}
+	if c.InternalServer.Product == "" {
+		c.InternalServer.Product = os.Getenv("INTERNAL_SERVER_PRODUCT")
 	}
 	// rocketmq
 	if c.RocketMQ.Host == "" {

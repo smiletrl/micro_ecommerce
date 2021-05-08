@@ -2,7 +2,6 @@ package external
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
@@ -10,15 +9,16 @@ import (
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"time"
 )
 
 type Client interface {
 	// Get sku stock
-	GetSkuStock(eContext echo.Context, skuID string) (stock int, err error)
+	GetSkuStock(ctx context.Context, skuID string) (stock int, err error)
 
 	// Get sku property
-	GetSkuProperties(eContext echo.Context, skuIDs []string) (properties []entity.SkuProperty, err error)
+	GetSkuProperties(ctx context.Context, skuIDs []string) (properties []entity.SkuProperty, err error)
 }
 
 type client struct {
@@ -26,36 +26,38 @@ type client struct {
 	logger *zap.SugaredLogger
 }
 
-func NewClient(logger *zap.SugaredLogger) Client {
-	// @todo use connection pool
-	return client{
-		logger: logger,
-	}
-}
-
-// @todo add the connection pool
-func newConnection(ctx context.Context, logger *zap.SugaredLogger) pb.ProductClient {
-	// @todo inject this endpoint into config
-	var productEndpoint = "product"
-	var address = productEndpoint + constants.GrpcPort
-
-	// @todo maybe add heart beat for this connection
-	// only allow 3 seconds connection.
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
-	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock())
+func NewClient(endpoint string, logger *zap.SugaredLogger) (Client, error) {
+	conn, err := newConnectionClient(endpoint, logger)
 	if err != nil {
-		logger.Errorf("error connecting grpc in product: %s", err.Error())
-		panic(err)
+		return nil, err
 	}
-	//defer conn.Close()
-	return pb.NewProductClient(conn)
+	return client{
+		grpc:   conn,
+		logger: logger,
+	}, nil
 }
 
-func (c client) GetSkuStock(eContext echo.Context, skuID string) (stock int, err error) {
-	ctx := eContext.Request().Context()
-	c.grpc = newConnection(ctx, c.logger)
+func newConnectionClient(endpoint string, logger *zap.SugaredLogger) (client pb.ProductClient, err error) {
+	var address = endpoint + constants.GrpcPort
 
+	var kacp = keepalive.ClientParameters{
+		Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
+		Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
+		PermitWithoutStream: true,             // send pings even without active streams
+	}
+
+	// only allow maximum 1 second connection.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithKeepaliveParams(kacp))
+	if err != nil {
+		logger.Errorf("error connecting the grpc server at product: %s", err.Error())
+		return nil, err
+	}
+	return pb.NewProductClient(conn), nil
+}
+
+func (c client) GetSkuStock(ctx context.Context, skuID string) (stock int, err error) {
 	pbstock, err := c.grpc.GetSkuStock(ctx, &pb.SkuID{Value: skuID})
 	if err != nil {
 		return stock, errors.Wrapf(errorsd.New("error getting sku stock from rpc"), "error getting sku stock from rpc: %s", err.Error())
@@ -64,10 +66,7 @@ func (c client) GetSkuStock(eContext echo.Context, skuID string) (stock int, err
 	return int(pbstock.Value), nil
 }
 
-func (c client) GetSkuProperties(eContext echo.Context, skuIDs []string) (properties []entity.SkuProperty, err error) {
-	ctx := eContext.Request().Context()
-	c.grpc = newConnection(ctx, c.logger)
-
+func (c client) GetSkuProperties(ctx context.Context, skuIDs []string) (properties []entity.SkuProperty, err error) {
 	gProperties, err := c.grpc.GetSkuProperties(ctx, &pb.SkuIDs{Value: skuIDs})
 	if err != nil {
 		return nil, errors.Wrapf(errorsd.New("error getting sku properties from rpc"), "error getting sku properties from rpc: %s", err.Error())
