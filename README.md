@@ -64,8 +64,8 @@ Then the UI result may look like
 Kubernetes UI
 ![Kubernetes UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/kubernetes%20UI.png)
 
-Jeager UI
-![Jeager UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/Jeager%20UI.png)
+Jaeger UI
+![Jaeger UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/Jeager%20UI.png)
 
 Kiali UI
 ![Kiali UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/Kiali%20UI.png)
