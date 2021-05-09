@@ -64,4 +64,5 @@ func main() {
 
 	// Start rest server
 	e.Logger.Fatal(e.Start(constants.RestPort))
+	//e.Logger.Fatal(e.Start(":1324"))
 }

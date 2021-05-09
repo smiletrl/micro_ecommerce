@@ -2,10 +2,11 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
+	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
@@ -17,18 +18,18 @@ import (
 )
 
 func main() {
+	// init logger
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	sugar := logger.Sugar()
+
 	// echo instance
 	e := echo.New()
 	echoGroup := e.Group("/api/v1")
 
 	// middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	// init logger
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	sugar := logger.Sugar()
+	e.Use(accesslog.Middleware(sugar))
+	e.Use(errors.Recover(sugar))
 
 	// initialize service
 	stage := os.Getenv(constants.Stage)
@@ -60,9 +61,10 @@ func main() {
 	cart.RegisterHandlers(echoGroup, cartService, jwtService)
 
 	// Start server
-	if err = e.Start(constants.RestPort); err != nil {
-		panic(err)
-	}
+	//if err = e.Start(constants.RestPort); err != nil {
+	//	sugar.Fatal(err)
+	//}
+	sugar.Fatal(e.Start(constants.RestPort))
 }
 
 // product proxy
