@@ -1,4 +1,4 @@
-package postgre
+package postgresql
 
 import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"

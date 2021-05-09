@@ -144,7 +144,7 @@ github.com/smiletrl/micro_service
 |   |-- kafka
 |   |-- migration
 |   |-- mongodb
-|   |-- postgre
+|   |-- postgresql
 |   |-- redis
 |   |-- rocketmq
 |   |-- test

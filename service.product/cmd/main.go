@@ -49,10 +49,10 @@ func main() {
 	productService := product.NewService(productRepo, sugar)
 	product.RegisterHandlers(echoGroup, productService)
 
-	err = product.Consume(config.RocketMQ)
-	if err != nil {
-		panic(err)
-	}
+	//err = product.Consume(config.RocketMQ)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	// start grpc server
 	go func() {

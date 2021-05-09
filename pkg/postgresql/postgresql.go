@@ -1,4 +1,4 @@
-package postgre
+package postgresql
 
 import (
 	"context"
@@ -24,7 +24,7 @@ type db struct {
 
 // InitDB is to inti db
 func InitDB(cfg config.Config) (DB, error) {
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Postgre.User, cfg.Postgre.Password, cfg.Postgre.Host, cfg.Postgre.Port, cfg.Postgre.Name)
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Postgresql.User, cfg.Postgresql.Password, cfg.Postgresql.Host, cfg.Postgresql.Port, cfg.Postgresql.Name)
 
 	dbpool, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {

@@ -11,23 +11,22 @@ import (
 
 // Config is the type used for storing configurations
 type Config struct {
-	Version           string
-	BaseDir           string `yaml:"base_dir"`
-	MainDomain        string `yaml:"main_domain"`
-	PostgreConnString string `yaml:"postgre_conn_string"`
-	Postgre           PostgreConfig
-	Redis             RedisConfig
-	RocketMQ          RocketMQConfig
-	Kafka             KafkaConfig
-	MongoDB           MongodbConfig
-	InternalServer    InternalServer `yaml:"internal_server"`
-	Stage             string
-	JwtSecret         string `yaml:"jwt_secret"`
-	MigrationPath     string `yaml:"migration_path"`
+	Version              string
+	BaseDir              string `yaml:"base_dir"`
+	MainDomain           string `yaml:"main_domain"`
+	PostgresqlConnString string `yaml:"postgresql_conn_string"`
+	Postgresql           PostgresqlConfig
+	Redis                RedisConfig
+	RocketMQ             RocketMQConfig
+	Kafka                KafkaConfig
+	MongoDB              MongodbConfig
+	InternalServer       InternalServer `yaml:"internal_server"`
+	Stage                string
+	JwtSecret            string `yaml:"jwt_secret"`
+	MigrationPath        string `yaml:"migration_path"`
 }
 
-// DBConfig stores the config for the database
-type PostgreConfig struct {
+type PostgresqlConfig struct {
 	User     string
 	Password string
 	Name     string
@@ -116,23 +115,23 @@ func Load(stage string) (Config, error) {
 		c.MainDomain = os.Getenv("MAIN_DOMAIN")
 	}
 	// db
-	if c.PostgreConnString == "" {
-		c.PostgreConnString = os.Getenv("POSTGRE_DB_CONN_STRING")
+	if c.PostgresqlConnString == "" {
+		c.PostgresqlConnString = os.Getenv("POSTGRE_DB_CONN_STRING")
 	}
-	if c.Postgre.Host == "" {
-		c.Postgre.Host = os.Getenv("POSTGRE_DB_HOST")
+	if c.Postgresql.Host == "" {
+		c.Postgresql.Host = os.Getenv("POSTGRE_DB_HOST")
 	}
-	if c.Postgre.User == "" {
-		c.Postgre.User = os.Getenv("POSTGRE_DB_USER")
+	if c.Postgresql.User == "" {
+		c.Postgresql.User = os.Getenv("POSTGRE_DB_USER")
 	}
-	if c.Postgre.Password == "" {
-		c.Postgre.Password = os.Getenv("POSTGRE_DB_PASS")
+	if c.Postgresql.Password == "" {
+		c.Postgresql.Password = os.Getenv("POSTGRE_DB_PASS")
 	}
-	if c.Postgre.Name == "" {
-		c.Postgre.Name = os.Getenv("POSTGRE_DB_NAME")
+	if c.Postgresql.Name == "" {
+		c.Postgresql.Name = os.Getenv("POSTGRE_DB_NAME")
 	}
-	if c.Postgre.Port == "" {
-		c.Postgre.Port = os.Getenv("POSTGRE_DB_PORT")
+	if c.Postgresql.Port == "" {
+		c.Postgresql.Port = os.Getenv("POSTGRE_DB_PORT")
 	}
 	if c.JwtSecret == "" {
 		c.JwtSecret = os.Getenv("JWT_SECRET")

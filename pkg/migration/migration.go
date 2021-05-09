@@ -30,11 +30,11 @@ func GetMigrator(config config.Config) (pop.FileMigrator, *pop.Connection) {
 }
 
 func getConn(config config.Config) *pop.Connection {
-	name := config.Postgre.Name
-	user := config.Postgre.User
-	pass := config.Postgre.Password
-	host := config.Postgre.Host
-	port := config.Postgre.Port
+	name := config.Postgresql.Name
+	user := config.Postgresql.User
+	pass := config.Postgresql.Password
+	host := config.Postgresql.Host
+	port := config.Postgresql.Port
 
 	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		user, pass, host, port, name)

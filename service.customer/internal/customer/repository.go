@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgre"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
 	"time"
 )
 
@@ -24,11 +24,11 @@ type Repository interface {
 }
 
 type repository struct {
-	pdb postgre.DB
+	pdb postgresql.DB
 }
 
 // NewRepository returns a new repostory
-func NewRepository(pdb postgre.DB) Repository {
+func NewRepository(pdb postgresql.DB) Repository {
 	return &repository{pdb}
 }
 

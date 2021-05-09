@@ -46,9 +46,9 @@ func init() {
 
 	// Only use this extra config DBConnString to make it work for github action test.
 	// Not sure why, but github action jobs can not parse the following fmt sprintf string.
-	connStr := cfg.PostgreConnString
-	if cfg.PostgreConnString == "" {
-		connStr = fmt.Sprintf("user=%s sslmode=%s host=%s password=%s port=%s dbname=%s", cfg.Postgre.User, cfg.Postgre.SSLMode, cfg.Postgre.Host, cfg.Postgre.Password, cfg.Postgre.Port, cfg.Postgre.Name)
+	connStr := cfg.PostgresqlConnString
+	if cfg.PostgresqlConnString == "" {
+		connStr = fmt.Sprintf("user=%s sslmode=%s host=%s password=%s port=%s dbname=%s", cfg.Postgresql.User, cfg.Postgresql.SSLMode, cfg.Postgresql.Host, cfg.Postgresql.Password, cfg.Postgresql.Port, cfg.Postgresql.Name)
 	}
 
 	dbpool, err = pgxpool.Connect(context.Background(), connStr)

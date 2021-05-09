@@ -6,7 +6,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgre"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/balance"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/customer"
 	"go.uber.org/zap"
@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db, err := postgre.InitDB(config)
+	db, err := postgresql.InitDB(config)
 	if err != nil {
 		panic(err)
 	}
@@ -48,10 +48,10 @@ func main() {
 	balanceService := balance.NewService(balanceRepo, sugar)
 	balance.RegisterHandlers(echoGroup, balanceService)
 
-	err = balance.Consume(config.RocketMQ)
-	if err != nil {
-		panic(err)
-	}
+	//err = balance.Consume(config.RocketMQ)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	// customer
 	customerRepo := customer.NewRepository(db)

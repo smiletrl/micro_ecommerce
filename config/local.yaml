@@ -1,7 +1,7 @@
 version: 0.1.0
 base_dir: $PWD
 main_domain: "xxx"
-Postgre:
+postgresql:
   user: postgres
   password: password
   name: micro_ecommerce

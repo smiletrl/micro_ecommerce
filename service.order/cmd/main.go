@@ -6,7 +6,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/postgre"
+	_ "github.com/smiletrl/micro_ecommerce/pkg/postgresql"
 	"github.com/smiletrl/micro_ecommerce/service.order/internal/order"
 	"os"
 )
@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//db, err := postgre.InitDB(config)
+	//db, err := postgresql.InitDB(config)
 	//if err != nil {
 	//	panic(err)
 	//}
