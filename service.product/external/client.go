@@ -2,10 +2,15 @@ package external
 
 import (
 	"context"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	_ "github.com/labstack/echo/v4"
+	_ "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -22,18 +27,20 @@ type Client interface {
 }
 
 type client struct {
-	grpc   pb.ProductClient
-	logger *zap.SugaredLogger
+	grpc    pb.ProductClient
+	logger  *zap.SugaredLogger
+	tracing tracing.Provider
 }
 
-func NewClient(endpoint string, logger *zap.SugaredLogger) (Client, error) {
+func NewClient(endpoint string, tracingProvider tracing.Provider, logger *zap.SugaredLogger) (Client, error) {
 	conn, err := newConnectionClient(endpoint, logger)
 	if err != nil {
 		return nil, err
 	}
 	return client{
-		grpc:   conn,
-		logger: logger,
+		grpc:    conn,
+		logger:  logger,
+		tracing: tracingProvider,
 	}, nil
 }
 
@@ -49,7 +56,17 @@ func newConnectionClient(endpoint string, logger *zap.SugaredLogger) (client pb.
 	// only allow maximum 1 second connection.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithKeepaliveParams(kacp))
+	conn, err := grpc.DialContext(ctx, address,
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(
+			grpc_opentracing.StreamClientInterceptor(),
+		)),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+			grpc_opentracing.UnaryClientInterceptor(),
+		)),
+	)
 	if err != nil {
 		logger.Errorf("error connecting the grpc server at product: %s", err.Error())
 		return nil, err

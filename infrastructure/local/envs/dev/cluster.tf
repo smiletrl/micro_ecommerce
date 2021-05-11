@@ -178,7 +178,7 @@ resource "kubernetes_deployment" "cart" {
     spec {
         progress_deadline_seconds = 6000
 
-        replicas = 2
+        replicas = 1
 
         selector {
             match_labels = {
@@ -249,7 +249,7 @@ resource "kubernetes_deployment" "customer" {
     spec {
         progress_deadline_seconds = 6000
 
-        replicas = 2
+        replicas = 1
 
         selector {
             match_labels = {
@@ -320,7 +320,7 @@ resource "kubernetes_deployment" "product" {
     spec {
         progress_deadline_seconds = 6000
 
-        replicas = 2
+        replicas = 1
 
         selector {
             match_labels = {
@@ -391,7 +391,7 @@ resource "kubernetes_deployment" "order" {
     spec {
         progress_deadline_seconds = 6000
 
-        replicas = 2
+        replicas = 1
 
         selector {
             match_labels = {
@@ -462,7 +462,7 @@ resource "kubernetes_deployment" "payment" {
     spec {
         progress_deadline_seconds = 6000
 
-        replicas = 2
+        replicas = 1
 
         selector {
             match_labels = {

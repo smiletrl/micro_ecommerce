@@ -6,6 +6,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
 	"go.uber.org/zap"
@@ -32,7 +34,17 @@ func Register(logger *zap.SugaredLogger) error {
 		Time:                  5 * time.Second,  // Ping the client if it is idle for 5 seconds to ensure the connection is still active
 		Timeout:               1 * time.Second,  // Wait 1 second for the ping ack before assuming the connection is dead
 	}
-	s := grpc.NewServer(grpc.KeepaliveEnforcementPolicy(kaep), grpc.KeepaliveParams(kasp))
+	s := grpc.NewServer(
+		grpc.KeepaliveEnforcementPolicy(kaep),
+		grpc.KeepaliveParams(kasp),
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_opentracing.StreamServerInterceptor(),
+		)),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			//grpc_opentracing.UnaryServerInterceptor(grpc_opentracing.WithTracer(tracer)),
+			grpc_opentracing.UnaryServerInterceptor(),
+		)),
+	)
 	pb.RegisterProductServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
 		logger.Errorf("error serving tcp connection for product grpc: %s", err.Error())

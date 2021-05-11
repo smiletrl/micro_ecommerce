@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -11,6 +12,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	_ "github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
 	"go.uber.org/zap"
@@ -23,47 +25,54 @@ func main() {
 	defer logger.Sync()
 	sugar := logger.Sugar()
 
-	// echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
-	// middleware
-	e.Use(accesslog.Middleware(sugar))
-	e.Use(errors.Recover(sugar))
-
-	// initialize service
+	// stage
 	stage := os.Getenv(constants.Stage)
 	if stage == "" {
 		stage = constants.StageLocal
 	}
-	config, err := config.Load(stage)
+	cfg, err := config.Load(stage)
 	if err != nil {
 		panic(err)
 	}
+
+	// echo instance
+	e := echo.New()
+	echoGroup := e.Group("/api/v1")
+
+	tracingProvider := tracing.NewProvider()
+	closer, err := tracingProvider.SetupTracer("cart", cfg)
+	if err != nil {
+		sugar.Fatal(err)
+	}
+	defer closer.Close()
+
+	// middleware
+	e.Use(accesslog.Middleware(sugar))
+	e.Use(tracingProvider.Middleware(sugar))
+	e.Use(errors.Recover(sugar))
+
+	// initialize service
 	healthcheck.RegisterHandlers(e.Group(""))
 
 	// redis
-	redisClient := redis.New(config)
+	redisClient := redis.New(cfg)
 
-	jwtService := jwt.NewProvider(config.JwtSecret)
+	jwtService := jwt.NewProvider(cfg.JwtSecret)
 
 	// product grpc client.
-	pclient, err := productClient.NewClient(config.InternalServer.Product, sugar)
+	pclient, err := productClient.NewClient(cfg.InternalServer.Product, tracingProvider, sugar)
 	if err != nil {
 		panic(err)
 	}
 
 	// cart
-	cartRepo := cart.NewRepository(redisClient)
+	cartRepo := cart.NewRepository(redisClient, tracingProvider)
 
 	productProxy := product{pclient}
 	cartService := cart.NewService(cartRepo, productProxy, sugar)
 	cart.RegisterHandlers(echoGroup, cartService, jwtService)
 
-	// Start server
-	//if err = e.Start(constants.RestPort); err != nil {
-	//	sugar.Fatal(err)
-	//}
+	// start server
 	sugar.Fatal(e.Start(constants.RestPort))
 }
 
@@ -72,10 +81,10 @@ type product struct {
 	client productClient.Client
 }
 
-func (p product) GetSkuStock(c echo.Context, skuID string) (int, error) {
-	return p.client.GetSkuStock(c.Request().Context(), skuID)
+func (p product) GetSkuStock(c context.Context, skuID string) (int, error) {
+	return p.client.GetSkuStock(c, skuID)
 }
 
-func (p product) GetSkuProperties(c echo.Context, skuIDs []string) ([]entity.SkuProperty, error) {
-	return p.client.GetSkuProperties(c.Request().Context(), skuIDs)
+func (p product) GetSkuProperties(c context.Context, skuIDs []string) ([]entity.SkuProperty, error) {
+	return p.client.GetSkuProperties(c, skuIDs)
 }

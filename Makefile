@@ -54,9 +54,9 @@ restart-svc:
 	- kubectl rollout restart deployment/$(svc) --namespace=dev
 
 # build local one service like: make build-svc svc=cart
+# 	- docker scan micro_ecommerce/service_$(svc):dev
 build-svc:
 	- docker build -t micro_ecommerce/service_$(svc):dev . -f service.$(svc)/Dockerfile
-	- docker scan micro_ecommerce/service_$(svc):dev
 	- docker login
 	- docker tag micro_ecommerce/service_$(svc):dev docker.io/smiletrl/micro_ecommerce_$(svc):dev
 	- docker push docker.io/smiletrl/micro_ecommerce_$(svc):dev

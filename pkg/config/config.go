@@ -21,6 +21,7 @@ type Config struct {
 	Kafka                KafkaConfig
 	MongoDB              MongodbConfig
 	InternalServer       InternalServer `yaml:"internal_server"`
+	TracingEndpoint      string         `yaml:"tracing_endpoint"`
 	Stage                string
 	JwtSecret            string `yaml:"jwt_secret"`
 	MigrationPath        string `yaml:"migration_path"`
@@ -167,6 +168,9 @@ func Load(stage string) (Config, error) {
 	}
 	if c.InternalServer.Product == "" {
 		c.InternalServer.Product = os.Getenv("INTERNAL_SERVER_PRODUCT")
+	}
+	if c.TracingEndpoint == "" {
+		c.TracingEndpoint = os.Getenv("TRACING_ENDPOINT")
 	}
 	// rocketmq
 	if c.RocketMQ.Host == "" {

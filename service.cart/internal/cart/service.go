@@ -1,7 +1,8 @@
 package cart
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
+	_ "github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
@@ -11,16 +12,16 @@ import (
 
 // Service is cart service
 type Service interface {
-	Get(c echo.Context) (cart []cartItem, err error)
+	Get(c context.Context) (cart []cartItem, err error)
 
 	// create new cart
-	Create(c echo.Context, skuID string, quantity int) error
+	Create(c context.Context, skuID string, quantity int) error
 
 	// update cart
-	Update(c echo.Context, skuID string, quantity int) error
+	Update(c context.Context, skuID string, quantity int) error
 
 	// delete cart
-	Delete(c echo.Context, skuID string) error
+	Delete(c context.Context, skuID string) error
 }
 
 type service struct {
@@ -34,9 +35,8 @@ func NewService(repo Repository, product ProductProxy, logger *zap.SugaredLogger
 	return service{repo, product, logger}
 }
 
-func (s service) Get(c echo.Context) (cart []cartItem, err error) {
-	// depending on the performance, maybe add the result to redis cache.
-	customerID := c.Get(constants.AuthCustomerID).(int64)
+func (s service) Get(c context.Context) (cart []cartItem, err error) {
+	customerID := c.Value(constants.AuthCustomerID).(int64)
 
 	// items is a map, key is skuID, value is this sku's quantity in cart
 	items, err := s.repo.Get(c, customerID)
@@ -92,9 +92,8 @@ func (s service) Get(c echo.Context) (cart []cartItem, err error) {
 	return cart, err
 }
 
-func (s service) Create(c echo.Context, skuID string, quantity int) error {
-
-	customerID := c.Get(constants.AuthCustomerID).(int64)
+func (s service) Create(c context.Context, skuID string, quantity int) error {
+	customerID := c.Value(constants.AuthCustomerID).(int64)
 
 	// get product sku stock
 	stock, err := s.productProxy.GetSkuStock(c, skuID)
@@ -104,13 +103,11 @@ func (s service) Create(c echo.Context, skuID string, quantity int) error {
 	if stock < quantity {
 		return errorsd.New("product stock is not enough")
 	}
-
 	return s.repo.Create(c, customerID, skuID, quantity)
 }
 
-func (s service) Update(c echo.Context, skuID string, quantity int) error {
-
-	customerID := c.Get(constants.AuthCustomerID).(int64)
+func (s service) Update(c context.Context, skuID string, quantity int) error {
+	customerID := c.Value(constants.AuthCustomerID).(int64)
 
 	if quantity < 1 {
 		return errorsd.New("quantity can not be under 1")
@@ -128,9 +125,8 @@ func (s service) Update(c echo.Context, skuID string, quantity int) error {
 	return s.repo.Update(c, customerID, skuID, quantity)
 }
 
-func (s service) Delete(c echo.Context, skuID string) error {
-
-	customerID := c.Get(constants.AuthCustomerID).(int64)
+func (s service) Delete(c context.Context, skuID string) error {
+	customerID := c.Value(constants.AuthCustomerID).(int64)
 
 	return s.repo.Delete(c, customerID, skuID)
 }

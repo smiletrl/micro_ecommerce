@@ -27,4 +27,5 @@ redis:
   port: "6380"
 internal_server:
   product: product
+tracing_endpoint: "http://jaeger-collector.istio-system.svc.cluster.local:14268/api/traces"
 jwt_secret: "secret"

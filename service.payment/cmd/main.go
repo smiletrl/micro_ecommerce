@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	_ "context"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -42,9 +42,9 @@ func main() {
 	paymentService := payment.NewService(paymentRepo)
 
 	rocketMQProvider := rocketmq.NewProvider(config.RocketMQ)
-	if err = rocketMQProvider.CreateTopic(context.Background(), constants.RocketMQTopicPayment); err != nil {
-		panic(err)
-	}
+	//if err = rocketMQProvider.CreateTopic(context.Background(), constants.RocketMQTopicPayment); err != nil {
+	//	panic(err)
+	//}
 	payment.RegisterHandlers(echoGroup, paymentService, rocketMQProvider)
 
 	// Start rest server

@@ -7,6 +7,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/mongodb"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
 	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/server"
 	"go.uber.org/zap"
@@ -27,7 +28,7 @@ func main() {
 	defer logger.Sync()
 	sugar := logger.Sugar()
 
-	// initialize service
+	// init config
 	stage := os.Getenv(constants.Stage)
 	if stage == "" {
 		stage = constants.StageLocal
@@ -37,6 +38,15 @@ func main() {
 		panic(err)
 	}
 
+	// init tracing
+	tracingProvider := tracing.NewProvider()
+	closer, err := tracingProvider.SetupTracer("product", config)
+	if err != nil {
+		sugar.Fatal(err)
+	}
+	defer closer.Close()
+
+	// initialize service
 	healthcheck.RegisterHandlers(e.Group(""))
 
 	db, err := mongodb.DB(config.MongoDB)

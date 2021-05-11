@@ -1,36 +1,38 @@
 package cart
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"github.com/labstack/echo/v4"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"strconv"
 )
 
 // Repository db repository
 type Repository interface {
-	Get(c echo.Context, customerID int64) (items map[string]string, err error)
+	Get(c context.Context, customerID int64) (items map[string]string, err error)
 
-	Create(c echo.Context, customerID int64, skuID string, quantity int) error
+	Create(c context.Context, customerID int64, skuID string, quantity int) error
 
-	Update(c echo.Context, customerID int64, skuID string, quantity int) error
+	Update(c context.Context, customerID int64, skuID string, quantity int) error
 
-	Delete(c echo.Context, customerID int64, skuID ...string) error
+	Delete(c context.Context, customerID int64, skuID ...string) error
 }
 
 type repository struct {
-	rdb *redis.Client
+	rdb     *redis.Client
+	tracing tracing.Provider
 }
 
 // NewRepository returns a new repostory
-func NewRepository(rdb *redis.Client) Repository {
-	return &repository{rdb}
+func NewRepository(rdb *redis.Client, tracing tracing.Provider) Repository {
+	return &repository{rdb, tracing}
 }
 
-func (r repository) Get(c echo.Context, customerID int64) (items map[string]string, err error) {
+func (r repository) Get(c context.Context, customerID int64) (items map[string]string, err error) {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	result, err := r.rdb.HGetAll(c.Request().Context(), key).Result()
+	result, err := r.rdb.HGetAll(c, key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return items, nil
@@ -40,8 +42,11 @@ func (r repository) Get(c echo.Context, customerID int64) (items map[string]stri
 	return result, nil
 }
 
-func (r repository) Create(c echo.Context, customerID int64, skuID string, quantity int) error {
-	ctx := c.Request().Context()
+func (r repository) Create(c context.Context, customerID int64, skuID string, quantity int) error {
+	// @todo, move it to redis.
+	span, ctx := r.tracing.StartSpan(c, "redis create")
+	defer span.Finish()
+
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
 	// if this sku doesn't exist, create a new hash
 	if isExisting := r.rdb.HExists(ctx, key, skuID).Val(); !isExisting {
@@ -63,18 +68,18 @@ func (r repository) Create(c echo.Context, customerID int64, skuID string, quant
 	return nil
 }
 
-func (r repository) Update(c echo.Context, customerID int64, skuID string, quantity int) error {
+func (r repository) Update(c context.Context, customerID int64, skuID string, quantity int) error {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	_, err := r.rdb.HSet(c.Request().Context(), key, skuID, quantity).Result()
+	_, err := r.rdb.HSet(c, key, skuID, quantity).Result()
 	return err
 }
 
-func (r repository) Delete(c echo.Context, customerID int64, skuID ...string) error {
+func (r repository) Delete(c context.Context, customerID int64, skuID ...string) error {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
 	var err error
 	if len(skuID) == 0 {
 		return errorsd.New("at least one sku id is required")
 	}
-	_, err = r.rdb.HDel(c.Request().Context(), key, skuID...).Result()
+	_, err = r.rdb.HDel(c, key, skuID...).Result()
 	return err
 }
