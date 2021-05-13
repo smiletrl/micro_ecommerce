@@ -24,17 +24,17 @@ func Middleware(logger logger.Provider) echo.MiddlewareFunc {
 				if cl == "" {
 					cl = "0"
 				}
-				logger.Infow("access",
-					"time", start.In(sh).Format(layout),
-					"remote_ip", c.RealIP(),
-					"host", req.Host,
-					"method", req.Method,
-					"uri", req.RequestURI,
-					"user_agent", req.UserAgent(),
-					"status", strconv.Itoa(res.Status),
-					"latency", stop.Sub(start).String(),
+				logger.Infow("http request",
 					"bytes_in", cl,
 					"bytes_out", strconv.FormatInt(res.Size, 10),
+					"user_agent", req.UserAgent(),
+					"remote_ip", c.RealIP(),
+					"http.host", req.Host,
+					"http.status", strconv.Itoa(res.Status),
+					"http.uri", req.RequestURI,
+					"http.method", req.Method,
+					"latency", stop.Sub(start).String(),
+					"time", start.In(sh).Format(layout),
 				)
 			}
 			return

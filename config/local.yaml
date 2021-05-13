@@ -27,5 +27,11 @@ redis:
   port: "6380"
 internal_server:
   product: localhost
+logger:
+  endpoint: "cn-shanghai.log.aliyuncs.com"
+  access_key_id: "xxx"
+  access_key_secret: "vvv"
+  project: "micro-ecommerce"
+  logstore: "micro-ecommerce"
 jwt_secret: "secret"
 migration_path: "/Users/smiletrl/go/src/github.com/smiletrl/micro_ecommerce/migrations"

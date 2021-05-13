@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/aliyun/aliyun-log-go-sdk"
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
+	"github.com/gogo/protobuf/proto"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"os"
@@ -50,21 +51,15 @@ func NewProvider(cfg config.LoggerConfig) Provider {
 }
 
 func NewAliyunProvider(cfg config.LoggerConfig) Provider {
-	log := provider{cfg: cfg}
-	log.Setup()
-	return log
-}
-
-func (p provider) Setup() {
 	producerConfig := producer.GetDefaultProducerConfig()
-	producerConfig.Endpoint = p.cfg.Endpoint
-	producerConfig.AccessKeyID = p.cfg.AccessKeyID
-	producerConfig.AccessKeySecret = p.cfg.AccessKeySecret
+	producerConfig.Endpoint = cfg.Endpoint
+	producerConfig.AccessKeyID = cfg.AccessKeyID
+	producerConfig.AccessKeySecret = cfg.AccessKeySecret
 	instance := producer.InitProducer(producerConfig)
-	p.producer = instance
 
-	// start the instance
+	log := provider{cfg: cfg, producer: instance}
 	instance.Start()
+	return log
 }
 
 func (p provider) Infow(msg string, keysAndValues ...string) {
@@ -111,18 +106,18 @@ func (p provider) log(topic string, msg string, keysAndValues ...string) {
 	})
 
 	var key, value string
-	i := -1
+	i := 0
 	for _, val := range keysAndValues {
 		i++
-		if i%2 == 0 {
+		if i%2 == 1 {
 			key = val
 		} else {
 			value = val
 		}
 		if i != 0 && i%2 == 0 {
 			content = append(content, &sls.LogContent{
-				Key:   &key,
-				Value: &value,
+				Key:   proto.String(key),
+				Value: proto.String(value),
 			})
 		}
 	}
@@ -140,7 +135,9 @@ func (p provider) log(topic string, msg string, keysAndValues ...string) {
 	// send it to logger service at aliyun.
 	// topic might be different service name later. It is log level at this moment.
 	// for debug purpose, use p.producer.SendLogWithContext().
-	p.producer.SendLog(p.cfg.Project, p.cfg.Logstore, topic, "http://google.com", &sls.Log{
+	// depends on the prod usage, might be necessary to set it as request host.
+	source := "logger"
+	p.producer.SendLog(p.cfg.Project, p.cfg.Logstore, topic, source, &sls.Log{
 		Time:     &logtime,
 		Contents: content,
 	})
