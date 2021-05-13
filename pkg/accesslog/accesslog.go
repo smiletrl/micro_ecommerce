@@ -2,13 +2,12 @@ package accesslog
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"strconv"
 	"time"
-
-	"go.uber.org/zap"
 )
 
-func Middleware(logger *zap.SugaredLogger) echo.MiddlewareFunc {
+func Middleware(logger logger.Provider) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			req := c.Request()
@@ -32,7 +31,7 @@ func Middleware(logger *zap.SugaredLogger) echo.MiddlewareFunc {
 					"method", req.Method,
 					"uri", req.RequestURI,
 					"user_agent", req.UserAgent(),
-					"status", res.Status,
+					"status", strconv.Itoa(res.Status),
 					"latency", stop.Sub(start).String(),
 					"bytes_in", cl,
 					"bytes_out", strconv.FormatInt(res.Size, 10),

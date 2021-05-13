@@ -10,30 +10,32 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	_ "github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
-	"go.uber.org/zap"
+
 	"os"
 )
 
 func main() {
-	// init logger
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	sugar := logger.Sugar()
-
 	// stage
 	stage := os.Getenv(constants.Stage)
 	if stage == "" {
 		stage = constants.StageLocal
 	}
+
+	// init config
 	cfg, err := config.Load(stage)
 	if err != nil {
 		panic(err)
 	}
+
+	// init logger
+	logger := logger.NewProvider(cfg.Logger)
+	defer logger.Close()
 
 	// echo instance
 	e := echo.New()
@@ -42,14 +44,14 @@ func main() {
 	tracingProvider := tracing.NewProvider()
 	closer, err := tracingProvider.SetupTracer("cart", cfg)
 	if err != nil {
-		sugar.Fatal(err)
+		logger.Fatal("tracing", err)
 	}
 	defer closer.Close()
 
 	// middleware
-	e.Use(accesslog.Middleware(sugar))
-	e.Use(tracingProvider.Middleware(sugar))
-	e.Use(errors.Recover(sugar))
+	e.Use(accesslog.Middleware(logger))
+	e.Use(tracingProvider.Middleware(logger))
+	e.Use(errors.Middleware(logger))
 
 	// initialize service
 	healthcheck.RegisterHandlers(e.Group(""))
@@ -60,20 +62,19 @@ func main() {
 	jwtService := jwt.NewProvider(cfg.JwtSecret)
 
 	// product grpc client.
-	pclient, err := productClient.NewClient(cfg.InternalServer.Product, tracingProvider, sugar)
+	pclient, err := productClient.NewClient(cfg.InternalServer.Product, tracingProvider, logger)
 	if err != nil {
 		panic(err)
 	}
 
 	// cart
 	cartRepo := cart.NewRepository(redisClient, tracingProvider)
-
 	productProxy := product{pclient}
-	cartService := cart.NewService(cartRepo, productProxy, sugar)
+	cartService := cart.NewService(cartRepo, productProxy, logger)
 	cart.RegisterHandlers(echoGroup, cartService, jwtService)
 
 	// start server
-	sugar.Fatal(e.Start(constants.RestPort))
+	logger.Fatal("echo start", e.Start(constants.RestPort))
 }
 
 // product proxy

@@ -15,4 +15,7 @@ const (
 
 	// StageProd stage prod
 	StageProd string = "prod"
+
+	// StageStaging stage staging
+	StageStaging string = "staging"
 )

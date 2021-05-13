@@ -13,8 +13,10 @@ import (
 type Config struct {
 	Version              string
 	BaseDir              string `yaml:"base_dir"`
+	Stage                string
 	MainDomain           string `yaml:"main_domain"`
 	PostgresqlConnString string `yaml:"postgresql_conn_string"`
+	Logger               LoggerConfig
 	Postgresql           PostgresqlConfig
 	Redis                RedisConfig
 	RocketMQ             RocketMQConfig
@@ -22,9 +24,16 @@ type Config struct {
 	MongoDB              MongodbConfig
 	InternalServer       InternalServer `yaml:"internal_server"`
 	TracingEndpoint      string         `yaml:"tracing_endpoint"`
-	Stage                string
-	JwtSecret            string `yaml:"jwt_secret"`
-	MigrationPath        string `yaml:"migration_path"`
+	JwtSecret            string         `yaml:"jwt_secret"`
+	MigrationPath        string         `yaml:"migration_path"`
+}
+
+type LoggerConfig struct {
+	Endpoint        string `yaml:"endpoint"`
+	AccessKeyID     string `yaml:"access_key_id"`
+	AccessKeySecret string `yaml:"access_key_secret"`
+	Project         string `yaml:"project"`
+	Logstore        string `yaml:"logstore"`
 }
 
 type PostgresqlConfig struct {
@@ -115,7 +124,23 @@ func Load(stage string) (Config, error) {
 	if c.MainDomain == "" {
 		c.MainDomain = os.Getenv("MAIN_DOMAIN")
 	}
-	// db
+	// Logger
+	if c.Logger.Endpoint == "" {
+		c.Logger.Endpoint = os.Getenv("LOGGER_ENDPOINT")
+	}
+	if c.Logger.AccessKeyID == "" {
+		c.Logger.AccessKeyID = os.Getenv("LOGGER_ACCESS_KEY_ID")
+	}
+	if c.Logger.AccessKeySecret == "" {
+		c.Logger.AccessKeySecret = os.Getenv("LOGGER_ACCESS_KEY_SECRET")
+	}
+	if c.Logger.Project == "" {
+		c.Logger.Project = os.Getenv("LOGGER_PROJECT")
+	}
+	if c.Logger.Logstore == "" {
+		c.Logger.Logstore = os.Getenv("LOGGER_LOGSTORE")
+	}
+	// postgres
 	if c.PostgresqlConnString == "" {
 		c.PostgresqlConnString = os.Getenv("POSTGRE_DB_CONN_STRING")
 	}

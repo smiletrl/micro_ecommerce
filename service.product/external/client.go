@@ -10,9 +10,9 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"time"
@@ -28,23 +28,23 @@ type Client interface {
 
 type client struct {
 	grpc    pb.ProductClient
-	logger  *zap.SugaredLogger
+	logger  logger.Provider
 	tracing tracing.Provider
 }
 
-func NewClient(endpoint string, tracingProvider tracing.Provider, logger *zap.SugaredLogger) (Client, error) {
-	conn, err := newConnectionClient(endpoint, logger)
+func NewClient(endpoint string, tracingProvider tracing.Provider, log logger.Provider) (Client, error) {
+	conn, err := newConnectionClient(endpoint, log)
 	if err != nil {
 		return nil, err
 	}
 	return client{
 		grpc:    conn,
-		logger:  logger,
+		logger:  log,
 		tracing: tracingProvider,
 	}, nil
 }
 
-func newConnectionClient(endpoint string, logger *zap.SugaredLogger) (client pb.ProductClient, err error) {
+func newConnectionClient(endpoint string, log logger.Provider) (client pb.ProductClient, err error) {
 	var address = endpoint + constants.GrpcPort
 
 	var kacp = keepalive.ClientParameters{
@@ -68,7 +68,7 @@ func newConnectionClient(endpoint string, logger *zap.SugaredLogger) (client pb.
 		)),
 	)
 	if err != nil {
-		logger.Errorf("error connecting the grpc server at product: %s", err.Error())
+		log.Errorw("error connecting the grpc server at product", err.Error())
 		return nil, err
 	}
 	return pb.NewProductClient(conn), nil

@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
-	"go.uber.org/zap"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"strconv"
 )
 
@@ -27,12 +27,12 @@ type Service interface {
 type service struct {
 	repo         Repository
 	productProxy ProductProxy
-	logger       *zap.SugaredLogger
+	log          logger.Provider
 }
 
 // NewService is to create new service
-func NewService(repo Repository, product ProductProxy, logger *zap.SugaredLogger) Service {
-	return service{repo, product, logger}
+func NewService(repo Repository, product ProductProxy, log logger.Provider) Service {
+	return service{repo, product, log}
 }
 
 func (s service) Get(c context.Context) (cart []cartItem, err error) {

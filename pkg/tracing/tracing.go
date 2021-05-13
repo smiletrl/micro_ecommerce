@@ -10,9 +10,9 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"go.uber.org/zap"
 )
 
 type Provider interface {
@@ -20,7 +20,7 @@ type Provider interface {
 	SetupTracer(serviceName string, c config.Config) (io.Closer, error)
 
 	// Middleware starts a trace for each request.
-	Middleware(logger *zap.SugaredLogger) echo.MiddlewareFunc
+	Middleware(log logger.Provider) echo.MiddlewareFunc
 
 	StartSpan(c context.Context, operationName string, opts ...opentracing.StartSpanOption) (opentracing.Span, context.Context)
 }
@@ -51,7 +51,7 @@ func (p *provider) SetupTracer(serviceName string, c config.Config) (io.Closer, 
 	return closer, err
 }
 
-func (p *provider) Middleware(logger *zap.SugaredLogger) echo.MiddlewareFunc {
+func (p *provider) Middleware(log logger.Provider) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			req := c.Request()

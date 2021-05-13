@@ -43,7 +43,6 @@ type Response struct {
 // Abort means error out `500`
 func Abort(c echo.Context, err error) error {
 	// log or send this error somewhere(e.g, sentry) for later fix
-	// @todo use zap logger to log the error message.
 	log.Printf("%+v", errors.WithStack(err))
 	// Get the cause error.
 	causeErr := errors.Cause(err)
