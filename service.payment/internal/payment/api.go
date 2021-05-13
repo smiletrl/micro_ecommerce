@@ -4,7 +4,6 @@ import (
 	"context"
 	mq "github.com/apache/rocketmq-client-go/v2"
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
@@ -14,8 +13,8 @@ import (
 )
 
 // RegisterHandlers for routes
-func RegisterHandlers(r *echo.Group, service Service, rocketMQ rocketmq.Provider) {
-	res := newResource(service, rocketMQ)
+func RegisterHandlers(r *echo.Group, rocketMQ rocketmq.Provider) {
+	res := newResource(rocketMQ)
 
 	productGroup := r.Group("/payment")
 
@@ -24,17 +23,15 @@ func RegisterHandlers(r *echo.Group, service Service, rocketMQ rocketmq.Provider
 }
 
 type resource struct {
-	service        Service
 	rocketProducer mq.Producer
 }
 
-func newResource(service Service, rocketMQ rocketmq.Provider) resource {
+func newResource(rocketMQ rocketmq.Provider) resource {
 	p, err := rocketMQ.CreateProducer(context.Background(), constants.RocketMQGroupPayment)
 	if err != nil {
 		panic(err)
 	}
 	r := resource{
-		service:        service,
 		rocketProducer: p,
 	}
 	return r
@@ -55,10 +52,6 @@ func (r resource) Create(c echo.Context) error {
 	req := new(createRequest)
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, err)
-	}
-	err := r.service.Create(c, req.CustomerID, req.OrderID, req.Amount, req.Type)
-	if err != nil {
-		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating payment"), "error creating payment: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, createResponse{
 		Data: "ok",

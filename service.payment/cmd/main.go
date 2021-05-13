@@ -7,7 +7,6 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/service.payment/internal/payment"
 	"os"
@@ -31,21 +30,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db, err := postgresql.InitDB(config)
-	if err != nil {
-		panic(err)
-	}
-
 	healthcheck.RegisterHandlers(e.Group(""))
-
-	paymentRepo := payment.NewRepository(db)
-	paymentService := payment.NewService(paymentRepo)
 
 	rocketMQProvider := rocketmq.NewProvider(config.RocketMQ)
 	//if err = rocketMQProvider.CreateTopic(context.Background(), constants.RocketMQTopicPayment); err != nil {
 	//	panic(err)
 	//}
-	payment.RegisterHandlers(echoGroup, paymentService, rocketMQProvider)
+	payment.RegisterHandlers(echoGroup, rocketMQProvider)
 
 	// Start rest server
 	e.Logger.Fatal(e.Start(constants.RestPort))

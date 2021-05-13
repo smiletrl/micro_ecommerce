@@ -44,9 +44,7 @@ func main() {
 	healthcheck.RegisterHandlers(e.Group(""))
 
 	// balance
-	balanceRepo := balance.NewRepository(db)
-	balanceService := balance.NewService(balanceRepo, sugar)
-	balance.RegisterHandlers(echoGroup, balanceService)
+	balance.RegisterHandlers(echoGroup)
 
 	//err = balance.Consume(config.RocketMQ)
 	//if err != nil {

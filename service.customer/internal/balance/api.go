@@ -7,8 +7,8 @@ import (
 )
 
 // RegisterHandlers for balance
-func RegisterHandlers(r *echo.Group, service Service) {
-	res := resource{service}
+func RegisterHandlers(r *echo.Group) {
+	res := resource{}
 
 	balanceGroup := r.Group("/balance")
 
@@ -17,7 +17,6 @@ func RegisterHandlers(r *echo.Group, service Service) {
 }
 
 type resource struct {
-	service Service
 }
 
 type addRequest struct {
@@ -33,10 +32,6 @@ func (r resource) Add(c echo.Context) error {
 	req := new(addRequest)
 	if err := c.Bind(req); err != nil {
 		return errors.BadRequest(c, err)
-	}
-	err := r.service.Add(c, req.CustomerID, req.Balance)
-	if err != nil {
-		return errors.Abort(c, err)
 	}
 	return c.JSON(http.StatusOK, addResponse{
 		Data: "ok",
