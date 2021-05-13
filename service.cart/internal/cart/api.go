@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	_ "github.com/opentracing/opentracing-go"
 	"github.com/smiletrl/micro_ecommerce/pkg/auth"
+	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
 	"net/http"
@@ -41,8 +42,10 @@ type getResponse struct {
 }
 
 func (r resource) Get(c echo.Context) error {
+	customerID := c.Get(constants.AuthCustomerID).(int64)
 	ctx := c.Request().Context()
-	items, err := r.service.Get(ctx)
+
+	items, err := r.service.Get(ctx, customerID)
 	if err != nil {
 		return errorsd.Abort(c, err)
 	}
@@ -52,6 +55,7 @@ func (r resource) Get(c echo.Context) error {
 }
 
 func (r resource) Create(c echo.Context) error {
+	customerID := c.Get(constants.AuthCustomerID).(int64)
 	ctx := c.Request().Context()
 	req := new(createRequest)
 	if err := c.Bind(req); err != nil {
@@ -59,7 +63,7 @@ func (r resource) Create(c echo.Context) error {
 	}
 
 	// RPC call to service product to get the product sku title, price, stock
-	err := r.service.Create(ctx, req.SkuID, req.Quantity)
+	err := r.service.Create(ctx, customerID, req.SkuID, req.Quantity)
 	if err != nil {
 		return errorsd.Abort(c, err)
 	}
@@ -74,9 +78,10 @@ type deleteResponse struct {
 }
 
 func (r resource) Delete(c echo.Context) error {
+	customerID := c.Get(constants.AuthCustomerID).(int64)
 	ctx := c.Request().Context()
 	skuID := c.Param("sku_id")
-	err := r.service.Delete(ctx, skuID)
+	err := r.service.Delete(ctx, customerID, skuID)
 	if err != nil {
 		return errorsd.Abort(c, err)
 	}

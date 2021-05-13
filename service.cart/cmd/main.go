@@ -59,7 +59,7 @@ func main() {
 	// redis
 	redisClient := redis.New(cfg)
 
-	jwtService := jwt.NewProvider(cfg.JwtSecret)
+	jwtProvider := jwt.NewProvider(cfg.JwtSecret)
 
 	// product grpc client.
 	pclient, err := productClient.NewClient(cfg.InternalServer.Product, tracingProvider, logger)
@@ -71,7 +71,7 @@ func main() {
 	cartRepo := cart.NewRepository(redisClient, tracingProvider)
 	productProxy := product{pclient}
 	cartService := cart.NewService(cartRepo, productProxy, logger)
-	cart.RegisterHandlers(echoGroup, cartService, jwtService)
+	cart.RegisterHandlers(echoGroup, cartService, jwtProvider)
 
 	// start server
 	logger.Fatal("echo start", e.Start(constants.RestPort))

@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"strconv"
@@ -12,16 +11,16 @@ import (
 
 // Service is cart service
 type Service interface {
-	Get(c context.Context) (cart []cartItem, err error)
+	Get(c context.Context, customerID int64) (cart []cartItem, err error)
 
 	// create new cart
-	Create(c context.Context, skuID string, quantity int) error
+	Create(c context.Context, customerID int64, skuID string, quantity int) error
 
 	// update cart
-	Update(c context.Context, skuID string, quantity int) error
+	Update(c context.Context, customerID int64, skuID string, quantity int) error
 
 	// delete cart
-	Delete(c context.Context, skuID string) error
+	Delete(c context.Context, customerID int64, skuID string) error
 }
 
 type service struct {
@@ -35,9 +34,7 @@ func NewService(repo Repository, product ProductProxy, log logger.Provider) Serv
 	return service{repo, product, log}
 }
 
-func (s service) Get(c context.Context) (cart []cartItem, err error) {
-	customerID := c.Value(constants.AuthCustomerID).(int64)
-
+func (s service) Get(c context.Context, customerID int64) (cart []cartItem, err error) {
 	// items is a map, key is skuID, value is this sku's quantity in cart
 	items, err := s.repo.Get(c, customerID)
 	if err != nil {
@@ -92,9 +89,7 @@ func (s service) Get(c context.Context) (cart []cartItem, err error) {
 	return cart, err
 }
 
-func (s service) Create(c context.Context, skuID string, quantity int) error {
-	customerID := c.Value(constants.AuthCustomerID).(int64)
-
+func (s service) Create(c context.Context, customerID int64, skuID string, quantity int) error {
 	// get product sku stock
 	stock, err := s.productProxy.GetSkuStock(c, skuID)
 	if err != nil {
@@ -106,9 +101,7 @@ func (s service) Create(c context.Context, skuID string, quantity int) error {
 	return s.repo.Create(c, customerID, skuID, quantity)
 }
 
-func (s service) Update(c context.Context, skuID string, quantity int) error {
-	customerID := c.Value(constants.AuthCustomerID).(int64)
-
+func (s service) Update(c context.Context, customerID int64, skuID string, quantity int) error {
 	if quantity < 1 {
 		return errorsd.New("quantity can not be under 1")
 	}
@@ -125,8 +118,6 @@ func (s service) Update(c context.Context, skuID string, quantity int) error {
 	return s.repo.Update(c, customerID, skuID, quantity)
 }
 
-func (s service) Delete(c context.Context, skuID string) error {
-	customerID := c.Value(constants.AuthCustomerID).(int64)
-
+func (s service) Delete(c context.Context, customerID int64, skuID string) error {
 	return s.repo.Delete(c, customerID, skuID)
 }
