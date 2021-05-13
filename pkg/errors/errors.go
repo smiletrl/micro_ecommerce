@@ -3,13 +3,13 @@ package errors
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"log"
+	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"net/http"
 )
 
 // Error represents business error
 type Error struct {
-	// this code may not be necessary now.
 	// Code is for future usage, something like `invalid_username`,
 	// `unmatched_password`.
 	Code    string `json:"code,omitempty"`
@@ -43,7 +43,9 @@ type Response struct {
 // Abort means error out `500`
 func Abort(c echo.Context, err error) error {
 	// log or send this error somewhere(e.g, sentry) for later fix
-	log.Printf("%+v", errors.WithStack(err))
+	logger := c.Get(constants.Logger).(logger.Provider)
+	logger.Errorw("http request abort", errors.WithStack(err).Error())
+
 	// Get the cause error.
 	causeErr := errors.Cause(err)
 
@@ -68,7 +70,10 @@ func Abort(c echo.Context, err error) error {
 
 // BadRequest means bad request `400`
 func BadRequest(c echo.Context, err error) error {
-	log.Printf("%+v", errors.WithStack(err))
+	// log or send this error somewhere(e.g, sentry) for later fix
+	logger := c.Get(constants.Logger).(logger.Provider)
+	logger.Errorw("http request abort", errors.WithStack(err).Error())
+
 	// Get the cause error.
 	causeErr := errors.Cause(err)
 

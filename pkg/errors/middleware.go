@@ -3,11 +3,12 @@ package errors
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"runtime"
 )
 
-func Middleware(log logger.Provider) echo.MiddlewareFunc {
+func Middleware(logger logger.Provider) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			defer func() {
@@ -19,14 +20,14 @@ func Middleware(log logger.Provider) echo.MiddlewareFunc {
 					stack := make([]byte, 4<<10)
 					length := runtime.Stack(stack, true)
 					msg := fmt.Sprintf("[PANIC RECOVER] %v %s\n", err, stack[:length])
-					log.Errorw(msg)
+					logger.Errorw(msg)
 
 					c.Error(err)
 				}
 			}()
 
 			// set logger.
-			c.Set("logger", log)
+			c.Set(constants.Logger, logger)
 			return next(c)
 		}
 	}

@@ -73,8 +73,8 @@ func init() {
 	}
 }
 
-// DB returns the db instance
-func DB() (*pgxpool.Pool, configd.Config, error) {
+// Postgres returns the postgres instance
+func Postgres() (*pgxpool.Pool, configd.Config, error) {
 	if err := m.Down(); err != nil && err.Error() != "no change" {
 		return nil, cfg, err
 	}
