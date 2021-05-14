@@ -48,13 +48,15 @@ func main() {
 	e.Use(tracingProvider.Middleware(logger))
 	e.Use(errors.Middleware(logger))
 
-	// initialize service
+	// initialize health
 	healthcheck.RegisterHandlers(e.Group(""))
 
+	// mongodb connection
 	db, err := mongodb.NewProvider(cfg.MongoDB, tracingProvider)
 	if err != nil {
 		panic(err)
 	}
+	defer db.Close()
 
 	// product
 	productRepo := product.NewRepository(db)
