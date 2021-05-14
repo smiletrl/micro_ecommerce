@@ -1,7 +1,7 @@
 package product
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
 	"github.com/pkg/errors"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,16 +12,16 @@ import (
 // Repository db repository
 type Repository interface {
 	// get product
-	Get(c echo.Context, id string) (prod product, err error)
+	Get(ctx context.Context, id string) (prod product, err error)
 
 	// create new product
-	Create(c echo.Context, req createRequest) (id string, err error)
+	Create(ctx context.Context, req createRequest) (id string, err error)
 
 	// update product
-	Update(c echo.Context, id string, req updateRequest) error
+	Update(ctx context.Context, id string, req updateRequest) error
 
 	// delete product
-	Delete(c echo.Context, id string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type repository struct {
@@ -33,7 +33,7 @@ func NewRepository(mdb *mongo.Database) Repository {
 	return repository{mdb}
 }
 
-func (r repository) Get(c echo.Context, id string) (prod product, err error) {
+func (r repository) Get(ctx context.Context, id string) (prod product, err error) {
 	collection := r.mdb.Collection("product")
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -41,7 +41,6 @@ func (r repository) Get(c echo.Context, id string) (prod product, err error) {
 	}
 
 	var prodM bson.M
-	ctx := c.Request().Context()
 	if err := collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&prodM); err != nil {
 		return prod, errors.Wrapf(errorsd.New("error getting product in db"), "error getting product in db: %s", err.Error())
 	}
@@ -50,10 +49,9 @@ func (r repository) Get(c echo.Context, id string) (prod product, err error) {
 	return prod, err
 }
 
-func (r repository) Create(c echo.Context, req createRequest) (id string, err error) {
+func (r repository) Create(ctx context.Context, req createRequest) (id string, err error) {
 	// @todo add product/category validation
 	collection := r.mdb.Collection("product")
-	ctx := c.Request().Context()
 	res, err := collection.InsertOne(ctx, bson.D{
 		{"title", req.Title},
 		{"body", req.Body},
@@ -71,14 +69,13 @@ func (r repository) Create(c echo.Context, req createRequest) (id string, err er
 	return objectID.Hex(), nil
 }
 
-func (r repository) Update(c echo.Context, id string, req updateRequest) error {
+func (r repository) Update(ctx context.Context, id string, req updateRequest) error {
 	collection := r.mdb.Collection("product")
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
 
-	ctx := c.Request().Context()
 	_, err = collection.UpdateOne(
 		ctx,
 		bson.M{"_id": objectID},
@@ -95,14 +92,13 @@ func (r repository) Update(c echo.Context, id string, req updateRequest) error {
 	return nil
 }
 
-func (r repository) Delete(c echo.Context, id string) error {
+func (r repository) Delete(ctx context.Context, id string) error {
 	collection := r.mdb.Collection("product")
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
 
-	ctx := c.Request().Context()
 	_, err = collection.DeleteOne(
 		ctx,
 		bson.M{"_id": objectID})

@@ -1,7 +1,7 @@
 package customer
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
 	"github.com/pkg/errors"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
@@ -11,28 +11,28 @@ import (
 // Repository db repository
 type Repository interface {
 	// get customer
-	Get(c echo.Context, id int64) (cus customer, err error)
+	Get(c context.Context, id int64) (cus customer, err error)
 
 	// create new customer
-	Create(c echo.Context, email, firstName, lastName string) (id int64, err error)
+	Create(c context.Context, email, firstName, lastName string) (id int64, err error)
 
 	// update customer
-	Update(c echo.Context, id int64, email, firstName, lastName string) error
+	Update(c context.Context, id int64, email, firstName, lastName string) error
 
 	// delete customer
-	Delete(c echo.Context, id int64) error
+	Delete(c context.Context, id int64) error
 }
 
 type repository struct {
-	pdb postgresql.DB
+	pdb postgresql.Provider
 }
 
 // NewRepository returns a new repostory
-func NewRepository(pdb postgresql.DB) Repository {
+func NewRepository(pdb postgresql.Provider) Repository {
 	return &repository{pdb}
 }
 
-func (r repository) Get(c echo.Context, id int64) (cus customer, err error) {
+func (r repository) Get(c context.Context, id int64) (cus customer, err error) {
 	sql := `select email, first_name, last_name from customers where id = $1`
 	row := r.pdb.QueryRow(c, sql, id)
 	err = row.Scan(&cus.Email, &cus.FirstName, &cus.LastName)
@@ -42,7 +42,7 @@ func (r repository) Get(c echo.Context, id int64) (cus customer, err error) {
 	return cus, err
 }
 
-func (r repository) Create(c echo.Context, email, firstName, lastName string) (id int64, err error) {
+func (r repository) Create(c context.Context, email, firstName, lastName string) (id int64, err error) {
 	now := time.Now().UTC()
 	sql := `insert into customers (email, first_name, last_name, created_at, updated_at) values
 		($1, $2, $3, $4, $5) returning (id)`
@@ -50,7 +50,7 @@ func (r repository) Create(c echo.Context, email, firstName, lastName string) (i
 	return id, nil
 }
 
-func (r repository) Update(c echo.Context, id int64, email, firstName, lastName string) error {
+func (r repository) Update(c context.Context, id int64, email, firstName, lastName string) error {
 	sql := `update customers set email = $1, first_name = $2, last_name = $3 where id = $4`
 	tag, err := r.pdb.Exec(c, sql, email, firstName, lastName, id)
 	if err != nil {
@@ -62,7 +62,7 @@ func (r repository) Update(c echo.Context, id int64, email, firstName, lastName 
 	return nil
 }
 
-func (r repository) Delete(c echo.Context, id int64) error {
+func (r repository) Delete(c context.Context, id int64) error {
 	sql := `delete from customers where id = $1`
 	tag, err := r.pdb.Exec(c, sql, id)
 	if err != nil {

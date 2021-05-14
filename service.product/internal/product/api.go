@@ -38,7 +38,8 @@ type getResponse struct {
 }
 
 func (r resource) Get(c echo.Context) error {
-	cus, err := r.service.Get(c, c.Param("id"))
+	ctx := c.Request().Context()
+	cus, err := r.service.Get(ctx, c.Param("id"))
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error getting product"), "error getting product: %s", err.Error()))
 	}
@@ -60,12 +61,13 @@ type createResponse struct {
 }
 
 func (r resource) Create(c echo.Context) error {
+	ctx := c.Request().Context()
 	req := new(createRequest)
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, err)
 	}
 
-	id, err := r.service.Create(c, *req)
+	id, err := r.service.Create(ctx, *req)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating product"), "error creating product: %s", err.Error()))
 	}
@@ -87,12 +89,13 @@ type updateResponse struct {
 }
 
 func (r resource) Update(c echo.Context) error {
+	ctx := c.Request().Context()
 	id := c.Param("id")
 	req := new(updateRequest)
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error updating request product id"), "error binding updating product request: %s", err.Error()))
 	}
-	err := r.service.Update(c, id, *req)
+	err := r.service.Update(ctx, id, *req)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error updating product"), "error updating product: %s", err.Error()))
 	}
@@ -110,7 +113,8 @@ type deleteResponse struct {
 }
 
 func (r resource) Delete(c echo.Context) error {
-	err := r.service.Delete(c, c.Param("id"))
+	ctx := c.Request().Context()
+	err := r.service.Delete(ctx, c.Param("id"))
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error deleting product"), "error deleting product: %s", err.Error()))
 	}

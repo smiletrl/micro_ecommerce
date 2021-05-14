@@ -2,46 +2,59 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/balance"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/customer"
-	"go.uber.org/zap"
 	"os"
 )
 
 func main() {
-	// Echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
-	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	// init logger
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	sugar := logger.Sugar()
-
-	// initialize service
+	// stage
 	stage := os.Getenv(constants.Stage)
 	if stage == "" {
 		stage = constants.StageLocal
 	}
-	config, err := config.Load(stage)
-	if err != nil {
-		panic(err)
-	}
-	db, err := postgresql.InitDB(config)
+
+	// init config
+	cfg, err := config.Load(stage)
 	if err != nil {
 		panic(err)
 	}
 
+	// init logger
+	logger := logger.NewProvider(cfg.Logger)
+	defer logger.Close()
+
+	// echo instance
+	e := echo.New()
+	echoGroup := e.Group("/api/v1")
+
+	tracingProvider := tracing.NewProvider()
+	closer, err := tracingProvider.SetupTracer("customer", cfg)
+	if err != nil {
+		logger.Fatal("tracing", err)
+	}
+	defer closer.Close()
+
+	// middleware
+	e.Use(accesslog.Middleware(logger))
+	e.Use(tracingProvider.Middleware(logger))
+	e.Use(errors.Middleware(logger))
+
+	// initialize health
 	healthcheck.RegisterHandlers(e.Group(""))
+
+	pdb, err := postgresql.NewProvider(cfg, tracingProvider)
+	if err != nil {
+		panic(err)
+	}
 
 	// balance
 	balance.RegisterHandlers(echoGroup)
@@ -52,8 +65,8 @@ func main() {
 	//}
 
 	// customer
-	customerRepo := customer.NewRepository(db)
-	customerService := customer.NewService(customerRepo, sugar)
+	customerRepo := customer.NewRepository(pdb)
+	customerService := customer.NewService(customerRepo, logger)
 	customer.RegisterHandlers(echoGroup, customerService)
 
 	// Start server

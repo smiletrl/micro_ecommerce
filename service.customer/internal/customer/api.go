@@ -36,12 +36,13 @@ type getResponse struct {
 }
 
 func (r resource) Get(c echo.Context) error {
+	ctx := c.Request().Context()
 	id := c.Param("id")
 	idInt64, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
 	}
-	cus, err := r.service.Get(c, idInt64)
+	cus, err := r.service.Get(ctx, idInt64)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error getting customer"), "error getting customer: %s", err.Error()))
 	}
@@ -61,11 +62,12 @@ type createResponse struct {
 }
 
 func (r resource) Create(c echo.Context) error {
+	ctx := c.Request().Context()
 	req := new(createRequest)
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error creating request customer"), "error binding creating customer request: %s", err.Error()))
 	}
-	id, err := r.service.Create(c, req.Email, req.FirstName, req.LastName)
+	id, err := r.service.Create(ctx, req.Email, req.FirstName, req.LastName)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error creating customer"), "error creating customer: %s", err.Error()))
 	}
@@ -85,6 +87,7 @@ type updateResponse struct {
 }
 
 func (r resource) Update(c echo.Context) error {
+	ctx := c.Request().Context()
 	id := c.Param("id")
 	idInt64, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
@@ -95,7 +98,7 @@ func (r resource) Update(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error updating request customer id"), "error binding updating customer request: %s", err.Error()))
 	}
-	err = r.service.Update(c, idInt64, req.Email, req.FirstName, req.LastName)
+	err = r.service.Update(ctx, idInt64, req.Email, req.FirstName, req.LastName)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error updating customer"), "error updating customer: %s", err.Error()))
 	}
@@ -109,13 +112,14 @@ type deleteResponse struct {
 }
 
 func (r resource) Delete(c echo.Context) error {
+	ctx := c.Request().Context()
 	id := c.Param("id")
 	idInt64, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return errorsd.BadRequest(c, errors.Wrapf(errorsd.New("error getting request customer"), "error getting customer request: %s", err.Error()))
 	}
 
-	err = r.service.Delete(c, idInt64)
+	err = r.service.Delete(ctx, idInt64)
 	if err != nil {
 		return errorsd.Abort(c, errors.Wrapf(errorsd.New("error deleting customer"), "error deleting customer: %s", err.Error()))
 	}

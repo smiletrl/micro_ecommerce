@@ -2,24 +2,23 @@ package server
 
 import (
 	"context"
-	"log"
 	"net"
 	"time"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
 
 // Register the rpc server for product service.
-func Register(logger *zap.SugaredLogger) error {
+func Register(logger logger.Provider) error {
 	lis, err := net.Listen("tcp", constants.GrpcPort)
 	if err != nil {
-		logger.Errorf("error listening tcp connection for product grpc: %s", err.Error())
+		logger.Errorw("error listening tcp connection for product grpc", err.Error())
 		return err
 	}
 	var kaep = keepalive.EnforcementPolicy{
@@ -47,7 +46,7 @@ func Register(logger *zap.SugaredLogger) error {
 	)
 	pb.RegisterProductServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
-		logger.Errorf("error serving tcp connection for product grpc: %s", err.Error())
+		logger.Errorw("error serving tcp connection for product grpc", err.Error())
 		return err
 	}
 	return nil
@@ -59,7 +58,7 @@ type server struct {
 }
 
 func (s *server) GetSkuStock(ctx context.Context, skuID *pb.SkuID) (*pb.Stock, error) {
-	log.Printf("sku id is: %s\n", skuID.Value)
+	//logger. Infow("sku id is: %s\n", skuID.Value)
 
 	// query db table directly
 	// @todo get sku from cache firstly and then db.
@@ -69,7 +68,7 @@ func (s *server) GetSkuStock(ctx context.Context, skuID *pb.SkuID) (*pb.Stock, e
 }
 
 func (s *server) GetSkuProperties(ctx context.Context, skuIDs *pb.SkuIDs) (*pb.SkuProperties, error) {
-	log.Printf("sku ids are: %+v\n", skuIDs.Value)
+	//log.Printf("sku ids are: %+v\n", skuIDs.Value)
 	// @todo query the sku property from db.
 	property := &pb.SkuProperty{
 		Id:         "1233223",

@@ -7,23 +7,24 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/migration"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 )
 
-type DB interface {
-	Query(c echo.Context, sql string, args ...interface{}) (pgx.Rows, error)
-	QueryRow(c echo.Context, sql string, args ...interface{}) pgx.Row
-	Exec(c echo.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
+type Provider interface {
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
 }
 
-type db struct {
-	DB *pgxpool.Pool
+type provider struct {
+	db      *pgxpool.Pool
+	tracing tracing.Provider
 }
 
-// InitDB is to inti db
-func InitDB(cfg config.Config) (DB, error) {
+// NewProvider returns a new postgresql db
+func NewProvider(cfg config.Config, tracing tracing.Provider) (Provider, error) {
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Postgresql.User, cfg.Postgresql.Password, cfg.Postgresql.Host, cfg.Postgresql.Port, cfg.Postgresql.Name)
 
 	dbpool, err := pgxpool.Connect(context.Background(), connString)
@@ -35,29 +36,30 @@ func InitDB(cfg config.Config) (DB, error) {
 		return nil, err
 	}
 
-	return NewDB(dbpool), nil
+	return provider{dbpool, tracing}, nil
 }
 
-// NewDB returns a new postgresql db
-func NewDB(pdb *pgxpool.Pool) DB {
-	return &db{pdb}
+func (p provider) RawDB() *pgxpool.Pool {
+	return p.db
 }
 
-func (db *db) RawDB() *pgxpool.Pool {
-	return db.DB
+func (p provider) Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error) {
+	span, ctx := p.tracing.StartSpan(ctx, sql)
+	defer p.tracing.FinishSpan(span)
+
+	return p.db.Query(ctx, sql, args...)
 }
 
-func (db *db) Query(c echo.Context, sql string, args ...interface{}) (pgx.Rows, error) {
-	// @todo add tracing later to monitor the performance
-	return db.DB.Query(c.Request().Context(), sql, args...)
+func (p provider) QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row {
+	span, ctx := p.tracing.StartSpan(ctx, sql)
+	defer p.tracing.FinishSpan(span)
+
+	return p.db.QueryRow(ctx, sql, args...)
 }
 
-func (db *db) QueryRow(c echo.Context, sql string, args ...interface{}) pgx.Row {
-	// @todo add tracing later to monitor the performance
-	return db.DB.QueryRow(c.Request().Context(), sql, args...)
-}
+func (p provider) Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error) {
+	span, ctx := p.tracing.StartSpan(ctx, sql)
+	defer p.tracing.FinishSpan(span)
 
-func (db *db) Exec(c echo.Context, sql string, args ...interface{}) (pgconn.CommandTag, error) {
-	// @todo add tracing later to monitor the performance
-	return db.DB.Exec(c.Request().Context(), sql, args...)
+	return p.db.Exec(ctx, sql, args...)
 }

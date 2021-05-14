@@ -1,46 +1,46 @@
 package product
 
 import (
-	"github.com/labstack/echo/v4"
-	"go.uber.org/zap"
+	"context"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 )
 
 // Service is cutomer service
 type Service interface {
-	Get(c echo.Context, id string) (pro product, err error)
+	Get(ctx context.Context, id string) (pro product, err error)
 
 	// create new product
-	Create(c echo.Context, req createRequest) (id string, err error)
+	Create(ctx context.Context, req createRequest) (id string, err error)
 
 	// update product
-	Update(c echo.Context, id string, req updateRequest) error
+	Update(ctx context.Context, id string, req updateRequest) error
 
 	// delete product
-	Delete(c echo.Context, id string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type service struct {
 	repo   Repository
-	logger *zap.SugaredLogger
+	logger logger.Provider
 }
 
 // NewService is to create new service
-func NewService(repo Repository, logger *zap.SugaredLogger) Service {
+func NewService(repo Repository, logger logger.Provider) Service {
 	return &service{repo, logger}
 }
 
-func (s *service) Get(c echo.Context, id string) (pro product, err error) {
-	return s.repo.Get(c, id)
+func (s *service) Get(ctx context.Context, id string) (pro product, err error) {
+	return s.repo.Get(ctx, id)
 }
 
-func (s *service) Create(c echo.Context, req createRequest) (id string, err error) {
-	return s.repo.Create(c, req)
+func (s *service) Create(ctx context.Context, req createRequest) (id string, err error) {
+	return s.repo.Create(ctx, req)
 }
 
-func (s *service) Update(c echo.Context, id string, req updateRequest) error {
-	return s.repo.Update(c, id, req)
+func (s *service) Update(ctx context.Context, id string, req updateRequest) error {
+	return s.repo.Update(ctx, id, req)
 }
 
-func (s *service) Delete(c echo.Context, id string) error {
-	return s.repo.Delete(c, id)
+func (s *service) Delete(ctx context.Context, id string) error {
+	return s.repo.Delete(ctx, id)
 }
