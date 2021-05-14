@@ -54,7 +54,7 @@ func main() {
 	// mongodb connection
 	db, err := mongodb.NewProvider(cfg.MongoDB, tracingProvider)
 	if err != nil {
-		panic(err)
+		logger.Fatal("mongodb", err)
 	}
 	defer db.Close()
 
@@ -72,7 +72,7 @@ func main() {
 	go func() {
 		err = rpcserver.Register(logger)
 		if err != nil {
-			panic(err)
+			logger.Fatal("grpc", err)
 		}
 	}()
 
