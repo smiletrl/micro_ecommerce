@@ -9,8 +9,7 @@ import (
 	"io"
 )
 
-type mockProvider struct {
-}
+type mockProvider struct{}
 
 func NewMockProvider() Provider {
 	return mockProvider{}

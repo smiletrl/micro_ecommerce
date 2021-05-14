@@ -57,7 +57,7 @@ func main() {
 	healthcheck.RegisterHandlers(e.Group(""))
 
 	// redis
-	redisClient := redis.New(cfg)
+	redisClient := redis.NewProvider(cfg, tracingProvider)
 
 	jwtProvider := jwt.NewProvider(cfg.JwtSecret)
 

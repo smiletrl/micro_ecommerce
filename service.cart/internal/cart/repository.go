@@ -3,8 +3,9 @@ package cart
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	goredis "github.com/go-redis/redis/v8"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
+	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"strconv"
 )
@@ -21,20 +22,20 @@ type Repository interface {
 }
 
 type repository struct {
-	rdb     *redis.Client
+	rdb     redis.Provider
 	tracing tracing.Provider
 }
 
 // NewRepository returns a new repostory
-func NewRepository(rdb *redis.Client, tracing tracing.Provider) Repository {
+func NewRepository(rdb redis.Provider, tracing tracing.Provider) Repository {
 	return &repository{rdb, tracing}
 }
 
 func (r repository) Get(c context.Context, customerID int64) (items map[string]string, err error) {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	result, err := r.rdb.HGetAll(c, key).Result()
+	result, err := r.rdb.HGetAllResult(c, key)
 	if err != nil {
-		if err == redis.Nil {
+		if err == goredis.Nil {
 			return items, nil
 		}
 		return items, err
@@ -43,24 +44,20 @@ func (r repository) Get(c context.Context, customerID int64) (items map[string]s
 }
 
 func (r repository) Create(c context.Context, customerID int64, skuID string, quantity int) error {
-	// @todo, move it to redis.
-	span, ctx := r.tracing.StartSpan(c, "redis create")
-	defer r.tracing.FinishSpan(span)
-
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
 	// if this sku doesn't exist, create a new hash
-	if isExisting := r.rdb.HExists(ctx, key, skuID).Val(); !isExisting {
-		_, err := r.rdb.HSet(ctx, key, skuID, quantity).Result()
+	if isExisting := r.rdb.HExistsVal(c, key, skuID); !isExisting {
+		_, err := r.rdb.HSetResult(c, key, skuID, quantity)
 		if err != nil {
 			return err
 		}
 	} else {
 		// increase the sku quantity in cart
-		currentQuantity, err := r.rdb.HGet(ctx, key, skuID).Int()
+		currentQuantity, err := r.rdb.HGetInt(c, key, skuID)
 		if err != nil {
 			return err
 		}
-		_, err = r.rdb.HSet(ctx, key, skuID, currentQuantity+quantity).Result()
+		_, err = r.rdb.HSetResult(c, key, skuID, currentQuantity+quantity)
 		if err != nil {
 			return err
 		}
@@ -70,7 +67,7 @@ func (r repository) Create(c context.Context, customerID int64, skuID string, qu
 
 func (r repository) Update(c context.Context, customerID int64, skuID string, quantity int) error {
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
-	_, err := r.rdb.HSet(c, key, skuID, quantity).Result()
+	_, err := r.rdb.HSetResult(c, key, skuID, quantity)
 	return err
 }
 
@@ -80,6 +77,6 @@ func (r repository) Delete(c context.Context, customerID int64, skuID ...string)
 	if len(skuID) == 0 {
 		return errorsd.New("at least one sku id is required")
 	}
-	_, err = r.rdb.HDel(c, key, skuID...).Result()
+	_, err = r.rdb.HDelResult(c, key, skuID...)
 	return err
 }

@@ -18,7 +18,7 @@ type Provider interface {
 	// SetupTracer creates a new Jaeger tracer.
 	SetupTracer(serviceName string, c config.Config) (io.Closer, error)
 
-	// Middleware starts a trace for each request.
+	// Middleware starts a root trace for each request.
 	Middleware(log logger.Provider) echo.MiddlewareFunc
 
 	StartSpan(c context.Context, operationName string) (opentracing.Span, context.Context)
@@ -70,7 +70,7 @@ func (p provider) Middleware(log logger.Provider) echo.MiddlewareFunc {
 			if req.URL.Path != "/health" {
 				// create a root span for this request
 				span, ctx = p.StartSpan(c.Request().Context(), operationName)
-				defer span.Finish()
+				defer p.FinishSpan(span)
 
 				r := c.Request().WithContext(ctx)
 				c.SetRequest(r)

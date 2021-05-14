@@ -62,6 +62,10 @@ func (r resource) Create(c echo.Context) error {
 		return errorsd.BadRequest(c, err)
 	}
 
+	if req.Quantity == 0 || req.SkuID == "" {
+		return errorsd.BadRequest(c, errorsd.New("missing parameter quantity or sku"))
+	}
+
 	// RPC call to service product to get the product sku title, price, stock
 	err := r.service.Create(ctx, customerID, req.SkuID, req.Quantity)
 	if err != nil {
