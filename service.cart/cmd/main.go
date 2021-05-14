@@ -42,7 +42,7 @@ func main() {
 	echoGroup := e.Group("/api/v1")
 
 	tracingProvider := tracing.NewProvider()
-	closer, err := tracingProvider.SetupTracer("cart", cfg)
+	closer, err := tracingProvider.SetupTracer(constants.TracingCart, cfg)
 	if err != nil {
 		logger.Fatal("tracing", err)
 	}
