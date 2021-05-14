@@ -2,7 +2,6 @@ package cart
 
 import (
 	"github.com/labstack/echo/v4"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/errors"
@@ -31,8 +30,6 @@ func TestAPI(t *testing.T) {
 	tracing := tracing.NewMockProvider()
 
 	// middleware
-	//e.Use(accesslog.Middleware(logger))
-	//e.Use(tracing.Middleware(logger))
 	e.Use(errors.Middleware(logger))
 	group := e.Group("/api/v1")
 
