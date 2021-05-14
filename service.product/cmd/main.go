@@ -51,7 +51,7 @@ func main() {
 	// initialize service
 	healthcheck.RegisterHandlers(e.Group(""))
 
-	db, err := mongodb.DB(cfg.MongoDB)
+	db, err := mongodb.NewProvider(cfg.MongoDB, tracingProvider)
 	if err != nil {
 		panic(err)
 	}
@@ -75,6 +75,7 @@ func main() {
 	}()
 
 	// Start rest server
-	e.Logger.Fatal(e.Start(constants.RestPort))
-	//e.Logger.Fatal(e.Start(":1324"))
+	if err = e.Start(constants.RestPort); err != nil {
+		logger.Fatal("echo instance", err)
+	}
 }
