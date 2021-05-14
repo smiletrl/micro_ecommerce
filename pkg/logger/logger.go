@@ -100,6 +100,8 @@ func (p provider) log(topic string, msg string, keysAndValues ...string) {
 
 	// initial message
 	msgKey := "message"
+	// @todo sls.LogContext is generating many heap allocates. Maybe rewrite this function
+	// later for performance.
 	content = append(content, &sls.LogContent{
 		Key:   &msgKey,
 		Value: &msg,

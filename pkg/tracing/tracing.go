@@ -8,7 +8,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/uber/jaeger-client-go"
@@ -22,16 +21,19 @@ type Provider interface {
 	// Middleware starts a trace for each request.
 	Middleware(log logger.Provider) echo.MiddlewareFunc
 
-	StartSpan(c context.Context, operationName string, opts ...opentracing.StartSpanOption) (opentracing.Span, context.Context)
+	StartSpan(c context.Context, operationName string) (opentracing.Span, context.Context)
+
+	// finsh span, primarily for mock purpose
+	FinishSpan(span opentracing.Span)
 }
 
 type provider struct{}
 
 func NewProvider() Provider {
-	return &provider{}
+	return provider{}
 }
 
-func (p *provider) SetupTracer(serviceName string, c config.Config) (io.Closer, error) {
+func (p provider) SetupTracer(serviceName string, c config.Config) (io.Closer, error) {
 	cfg := jaegercfg.Configuration{
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
@@ -51,7 +53,7 @@ func (p *provider) SetupTracer(serviceName string, c config.Config) (io.Closer, 
 	return closer, err
 }
 
-func (p *provider) Middleware(log logger.Provider) echo.MiddlewareFunc {
+func (p provider) Middleware(log logger.Provider) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			req := c.Request()
@@ -67,13 +69,7 @@ func (p *provider) Middleware(log logger.Provider) echo.MiddlewareFunc {
 
 			if req.URL.Path != "/health" {
 				// create a root span for this request
-				tracer := opentracing.GlobalTracer()
-				spanCtx, _ := tracer.Extract(
-					opentracing.HTTPHeaders,
-					opentracing.HTTPHeadersCarrier(req.Header),
-				)
-
-				span, ctx = p.StartSpan(c.Request().Context(), operationName, ext.RPCServerOption(spanCtx))
+				span, ctx = p.StartSpan(c.Request().Context(), operationName)
 				defer span.Finish()
 
 				r := c.Request().WithContext(ctx)
@@ -92,11 +88,15 @@ func (p *provider) Middleware(log logger.Provider) echo.MiddlewareFunc {
 	}
 }
 
-func (p *provider) StartSpan(ctx context.Context, operationName string, opts ...opentracing.StartSpanOption) (opentracing.Span, context.Context) {
-	return opentracing.StartSpanFromContext(ctx, operationName, opts...)
+func (p provider) StartSpan(ctx context.Context, operationName string) (opentracing.Span, context.Context) {
+	return opentracing.StartSpanFromContext(ctx, operationName)
 }
 
-func (p *provider) setSpanTags(req *http.Request, res *echo.Response, ip string, span opentracing.Span) {
+func (p provider) FinishSpan(span opentracing.Span) {
+	span.Finish()
+}
+
+func (p provider) setSpanTags(req *http.Request, res *echo.Response, ip string, span opentracing.Span) {
 	ctxKeys := map[string]interface{}{
 		"http.method":      req.Method,
 		"http.url":         req.URL.String(),

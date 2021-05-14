@@ -1,11 +1,11 @@
 package cart
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
-	"net/http/httptest"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"os"
 	"testing"
 
@@ -21,7 +21,7 @@ func TestCartRepository(t *testing.T) {
 var _ = Describe("cart repository methods", func() {
 	var (
 		repo       Repository
-		c          echo.Context
+		c          context.Context
 		customerID int64
 		skuID      string
 		quantity   int
@@ -36,13 +36,10 @@ var _ = Describe("cart repository methods", func() {
 		}
 		config, err := config.Load(stage)
 		Expect(err).To(BeNil())
-		repo = NewRepository(redis.Test(config))
+		tracing := tracing.NewMockProvider()
+		repo = NewRepository(redis.Test(config), tracing)
 
-		e := echo.New()
-		req := httptest.NewRequest("GET", "/", nil)
-		w := httptest.NewRecorder()
-		c = e.NewContext(req, w)
-
+		c = context.Background()
 		skuID = "sku_abc"
 		customerID = int64(12)
 	})

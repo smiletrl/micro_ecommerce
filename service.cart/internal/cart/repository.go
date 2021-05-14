@@ -45,7 +45,7 @@ func (r repository) Get(c context.Context, customerID int64) (items map[string]s
 func (r repository) Create(c context.Context, customerID int64, skuID string, quantity int) error {
 	// @todo, move it to redis.
 	span, ctx := r.tracing.StartSpan(c, "redis create")
-	defer span.Finish()
+	defer r.tracing.FinishSpan(span)
 
 	key := fmt.Sprintf("cart:%s", strconv.FormatInt(customerID, 10))
 	// if this sku doesn't exist, create a new hash
