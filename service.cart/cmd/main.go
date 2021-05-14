@@ -57,7 +57,10 @@ func main() {
 	healthcheck.RegisterHandlers(e.Group(""))
 
 	// redis
-	redisClient := redis.NewProvider(cfg, tracingProvider)
+	redis, err := redis.NewProvider(cfg, tracingProvider)
+	if err != nil {
+		logger.Fatal("redis", err)
+	}
 
 	jwtProvider := jwt.NewProvider(cfg.JwtSecret)
 
@@ -68,7 +71,7 @@ func main() {
 	}
 
 	// cart
-	cartRepo := cart.NewRepository(redisClient, tracingProvider)
+	cartRepo := cart.NewRepository(redis, tracingProvider)
 	productProxy := product{pclient}
 	cartService := cart.NewService(cartRepo, productProxy, logger)
 	cart.RegisterHandlers(echoGroup, cartService, jwtProvider)

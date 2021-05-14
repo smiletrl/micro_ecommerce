@@ -24,9 +24,12 @@ type provider struct {
 	tracing tracing.Provider
 }
 
-func NewProvider(cfg config.Config, tracing tracing.Provider) Provider {
-	db := DB(cfg, 0)
-	return provider{db, tracing}
+func NewProvider(cfg config.Config, tracing tracing.Provider) (Provider, error) {
+	db, err := DB(cfg, 0)
+	if err != nil {
+		return nil, err
+	}
+	return provider{db, tracing}, nil
 }
 
 func (p provider) HExistsVal(ctx context.Context, key, field string) bool {
@@ -65,7 +68,7 @@ func (p provider) HDelResult(ctx context.Context, key string, fields ...string) 
 }
 
 // DB creates a new redis client
-func DB(cfg config.Config, position int) *redis.Client {
+func DB(cfg config.Config, position int) (*redis.Client, error) {
 	// redis service
 	redisOptions := &redis.Options{
 		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
@@ -84,17 +87,23 @@ func DB(cfg config.Config, position int) *redis.Client {
 	defer cancel()
 
 	if _, err := rdb.Ping(ctx).Result(); err != nil {
-		panic(err)
+		return nil, err
 	}
-	return rdb
+	return rdb, nil
 }
 
 func NewMockProvider(cfg config.Config, tracing tracing.Provider) Provider {
 	// mock use the second redis db instance.
-	db := DB(cfg, 1)
+	db, err := DB(cfg, 1)
+	if err != nil {
+		panic(err)
+	}
 	if strings.Contains(cfg.Stage, constants.StageGithub) {
 		// in github test, use the default one
-		db = DB(cfg, 0)
+		db, err = DB(cfg, 0)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return provider{db, tracing}
 }

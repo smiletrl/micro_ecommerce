@@ -51,10 +51,12 @@ func main() {
 	// initialize health
 	healthcheck.RegisterHandlers(e.Group(""))
 
+	// postgres connection
 	pdb, err := postgresql.NewProvider(cfg, tracingProvider)
 	if err != nil {
-		panic(err)
+		logger.Fatal("postgres", err)
 	}
+	defer pdb.Close()
 
 	// balance
 	balance.RegisterHandlers(echoGroup)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
+	"time"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -16,6 +17,9 @@ type Provider interface {
 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
 	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
+
+	// used at defer after provider initialization.
+	Close()
 }
 
 type provider struct {
@@ -27,12 +31,17 @@ type provider struct {
 func NewProvider(cfg config.Config, tracing tracing.Provider) (Provider, error) {
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Postgresql.User, cfg.Postgresql.Password, cfg.Postgresql.Host, cfg.Postgresql.Port, cfg.Postgresql.Name)
 
-	dbpool, err := pgxpool.Connect(context.Background(), connString)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	dbpool, err := pgxpool.Connect(ctx, connString)
 	if err != nil {
 		return nil, err
 	}
 
 	if err := migration.MigrateUp(cfg); err != nil {
+		dbpool.Close()
+
 		return nil, err
 	}
 
@@ -62,4 +71,8 @@ func (p provider) Exec(ctx context.Context, sql string, args ...interface{}) (pg
 	defer p.tracing.FinishSpan(span)
 
 	return p.db.Exec(ctx, sql, args...)
+}
+
+func (p provider) Close() {
+	p.db.Close()
 }

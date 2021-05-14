@@ -26,9 +26,9 @@ type Provider interface {
 	Warnw(msg string, keysAndValues ...string)
 	Debugw(msg string, keysAndValues ...string)
 	Errorw(msg string, keysAndValues ...string)
-	// fatal logs a fatal error and exit with status 1.
+	// Fatal logs a fatal error and exit with status 1.
 	Fatal(msg string, err error)
-	// close the logger safely.
+	// Close the logger safely.
 	Close()
 }
 
