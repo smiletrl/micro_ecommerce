@@ -1,20 +1,15 @@
 package payment
 
 import (
-	"context"
-	mq "github.com/apache/rocketmq-client-go/v2"
 	"github.com/labstack/echo/v4"
-	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
-	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 
-	wePayment "github.com/medivhzhan/weapp/payment"
 	"net/http"
 )
 
 // RegisterHandlers for routes
-func RegisterHandlers(r *echo.Group, rocketMQ rocketmq.Provider) {
-	res := newResource(rocketMQ)
+func RegisterHandlers(r *echo.Group, service Service) {
+	res := resource{service}
 
 	productGroup := r.Group("/payment")
 
@@ -23,18 +18,7 @@ func RegisterHandlers(r *echo.Group, rocketMQ rocketmq.Provider) {
 }
 
 type resource struct {
-	rocketProducer mq.Producer
-}
-
-func newResource(rocketMQ rocketmq.Provider) resource {
-	p, err := rocketMQ.CreateProducer(context.Background(), constants.RocketMQGroupPayment)
-	if err != nil {
-		panic(err)
-	}
-	r := resource{
-		rocketProducer: p,
-	}
-	return r
+	service Service
 }
 
 type createRequest struct {
@@ -62,38 +46,10 @@ func (r resource) WechatPayCallback(c echo.Context) error {
 	ctx := c.Request().Context()
 	w := c.Response().Writer
 	req := c.Request()
-	err := wePayment.HandlePaidNotify(w, req, func(ntf wePayment.PaidNotify) (bool, string) {
-		// Pay successfully, notify other services via rocketMQ.
 
-		// @todo move these tags to constants
-		// order service will subscribe to this.
-		message := rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||order"), "order_id:xxx")
-		_, err := r.rocketProducer.SendSync(ctx, message)
-		if err != nil {
-			panic(err)
-		}
-
-		// product service will subscribe to this.
-		// product will reduce the stock value.
-		message = rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||product||sku||quantity"), "sku_id:xxx||quantity:xxx")
-		_, err = r.rocketProducer.SendSync(ctx, message)
-		if err != nil {
-			panic(err)
-		}
-
-		// customer service will subscribe to this.
-		// if this payment type/method is `balance`, customer's balance should be reduced.
-		message = rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||method||customer||balance"), "customer_id:xxx||amount:xxx")
-		_, err = r.rocketProducer.SendSync(ctx, message)
-		if err != nil {
-			panic(err)
-		}
-		return true, ""
-	})
-
-	if err != nil {
-		return err
+	if err := r.service.PaySucceed(ctx, w, req); err != nil {
+		return errorsd.Abort(c, err)
 	}
 
-	return nil
+	return c.String(200, "ok")
 }

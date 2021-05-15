@@ -1,7 +1,8 @@
 package main
 
 import (
-	_ "context"
+	"context"
+	rocketmqLib "github.com/apache/rocketmq-client-go/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -9,6 +10,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.payment/internal/payment"
@@ -19,7 +21,8 @@ type provider struct {
 	config   config.Config
 	tracing  tracing.Provider
 	logger   logger.Provider
-	rocketmq rocketmq.Provider
+	rocketmq rocketmqLib.Producer
+	pdb      postgresql.Provider
 }
 
 func main() {
@@ -47,16 +50,26 @@ func main() {
 	defer tracing.Close()
 
 	// init rocketmq
-	rocketmq := rocketmq.NewProvider(cfg.RocketMQ)
-	//if err = rocketMQProvider.CreateTopic(context.Background(), constants.RocketMQTopicPayment); err != nil {
-	//	panic(err)
-	//}
+	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ)
+	producer, err := rocketmqProvider.CreateProducer(context.Background(), constants.RocketMQGroupPayment)
+	if err != nil {
+		panic(err)
+	}
+	defer rocketmqProvider.ShutdownProducer(producer)
+
+	// init postgres
+	pdb, err := postgresql.NewProvider(cfg, tracing)
+	if err != nil {
+		panic(err)
+	}
+	defer pdb.Close()
 
 	p := provider{
 		config:   cfg,
 		tracing:  tracing,
 		logger:   logger,
-		rocketmq: rocketmq,
+		rocketmq: producer,
+		pdb:      pdb,
 	}
 	buildRegisters(p)
 }
@@ -75,7 +88,9 @@ func buildRegisters(p provider) {
 
 	group := e.Group("/api/v1")
 
-	payment.RegisterHandlers(group, p.rocketmq)
+	paymentRepo := payment.NewRepository(p.pdb)
+	paymentService := payment.NewService(paymentRepo, p.rocketmq, p.logger)
+	payment.RegisterHandlers(group, paymentService)
 
 	// Start rest server
 	panic(e.Start(constants.RestPort))

@@ -75,6 +75,7 @@ func (p provider) Debugw(msg string, keysAndValues ...string) {
 }
 
 func (p provider) Errorw(msg string, keysAndValues ...string) {
+	// @todo send error alert to slack/sentry
 	p.log(ErrorLevel, msg, keysAndValues...)
 }
 

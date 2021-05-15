@@ -10,27 +10,42 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	_ "sync"
+	"time"
 )
 
 type Provider interface {
-	CreateDefaultTopic(ctx context.Context) error
 	CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error)
 	CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
+
+	ShutdownProducer(producer rocketmq.Producer) error
+	ShutdownPushConsumer(consumer rocketmq.PushConsumer) error
 }
 
 func NewProvider(cfg config.RocketMQConfig) Provider {
-	return provider{
+	p := provider{
 		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
 		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// init the default topic
+	err := p.createDefaultTopic(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return p
 }
 
 type provider struct {
 	serverAddress []string
 	brokerAddress string
+	//producers     map[constants.RocketMQGroup]rocketmq.Producer
+	//mutex         sync.RWMutex
 }
 
-func (p provider) CreateDefaultTopic(ctx context.Context) error {
+func (p provider) createDefaultTopic(ctx context.Context) error {
 	// @todo check if this topic existing already
 	topicAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(p.serverAddress)))
 	if err != nil {
@@ -57,6 +72,7 @@ func (p provider) CreateProducer(ctx context.Context, group constants.RocketMQGr
 	if err != nil {
 		return nil, err
 	}
+
 	return producer, nil
 }
 
@@ -77,66 +93,10 @@ func (p provider) CreatePushConsumer(ctx context.Context, group constants.Rocket
 	return c, nil
 }
 
-/*
-func Start(cfg config.RocketMQConfig) {
-	var err error
-
-	s := service{
-		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
-		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
-	}
-
-	fmt.Printf("rocketmq service: %+v\n", s)
-
-	// topic
-	testAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(p.serverAddress)))
-	if err != nil {
-		panic(err)
-	}
-	err = testAdmin.CreateTopic(
-		context.Background(),
-		admin.WithTopicCreate("jack"),
-		admin.WithBrokerAddrCreate(p.brokerAddress),
-	)
-	if err != nil {
-		panic(err)
-	}
-	// producer
-	p, err := rocketmq.NewProducer(
-		producer.WithNsResolver(primitive.NewPassthroughResolver(p.serverAddress)),
-		producer.WithRetry(2),
-		producer.WithGroupName("GID_test"),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = p.Start()
-	if err != nil {
-		panic(err)
-	}
-	message := primitive.NewMessage("jack", []byte("Hello Jack Go Client!"))
-	message.WithTag("toml")
-
-	_, err = p.SendSync(context.Background(), message)
-	if err != nil {
-		panic(err)
-	}
-
-	// consumer
-	c, err := rocketmq.NewPushConsumer(
-		consumer.WithNsResolver(primitive.NewPassthroughResolver(p.serverAddress)),
-		consumer.WithGroupName("GID_test"),
-		// model needs to be set after group name somehow to make topic filter working.
-		consumer.WithConsumerModel(consumer.Clustering),
-		//consumer.WithConsumerModel(consumer.BroadCasting),
-	)
-
-	err = c.Start()
-	err = c.Subscribe("jack", consumer.MessageSelector{Type: consumer.TAG, Expression: "toml"}, func(ctx context.Context,
-		msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
-		fmt.Printf("subscribe admin jack tom callback: %s \n", msgs[0].Body)
-		return consumer.ConsumeSuccess, nil
-	})
+func (p provider) ShutdownProducer(producer rocketmq.Producer) error {
+	return producer.Shutdown()
 }
-*/
+
+func (p provider) ShutdownPushConsumer(consumer rocketmq.PushConsumer) error {
+	return consumer.Shutdown()
+}
