@@ -6,7 +6,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"go.uber.org/zap"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"time"
 )
 
@@ -16,7 +16,7 @@ type Provider interface {
 	Consume(ctx context.Context, topic constants.KafkaTopic, partition int) error
 }
 
-func NewProvider(cfg config.KafkaConfig, logger *zap.SugaredLogger) Provider {
+func NewProvider(cfg config.KafkaConfig, logger logger.Provider) Provider {
 	return provider{
 		url:    cfg.Host + cfg.Port,
 		logger: logger,
@@ -25,7 +25,7 @@ func NewProvider(cfg config.KafkaConfig, logger *zap.SugaredLogger) Provider {
 
 type provider struct {
 	url    string
-	logger *zap.SugaredLogger
+	logger logger.Provider
 }
 
 func (p provider) CreateTopic(ctx context.Context, topic constants.KafkaTopic, partition int) error {
@@ -42,7 +42,7 @@ func (p provider) Produce(ctx context.Context, topic constants.KafkaTopic, parti
 	// to produce messages
 	conn, err := kafka.DialLeader(ctx, "tcp", p.url, string(topic), partition)
 	if err != nil {
-		p.logger.Errorf("error dailing kafka leader: %s", err.Error())
+		p.logger.Errorw("error dailing kafka leader", err.Error())
 		return err
 	}
 
@@ -53,12 +53,12 @@ func (p provider) Produce(ctx context.Context, topic constants.KafkaTopic, parti
 	}
 	_, err = conn.WriteMessages(kMessages...)
 	if err != nil {
-		p.logger.Errorf("error writing message in kafka: %s", err.Error())
+		p.logger.Errorw("error writing message in kafka: %s", err.Error())
 		return nil
 	}
 
 	if err := conn.Close(); err != nil {
-		p.logger.Errorf("error closing writer in kafka: %s", err.Error())
+		p.logger.Errorw("error closing writer in kafka: %s", err.Error())
 		return err
 	}
 	return nil
@@ -67,7 +67,7 @@ func (p provider) Produce(ctx context.Context, topic constants.KafkaTopic, parti
 func (p provider) Consume(ctx context.Context, topic constants.KafkaTopic, partition int) error {
 	conn, err := kafka.DialLeader(ctx, "tcp", p.url, string(topic), partition)
 	if err != nil {
-		p.logger.Errorf("error dailing kafka leader: %s", err.Error())
+		p.logger.Errorw("error dailing kafka leader: %s", err.Error())
 		return err
 	}
 
@@ -78,19 +78,19 @@ func (p provider) Consume(ctx context.Context, topic constants.KafkaTopic, parti
 	for {
 		_, err := batch.Read(b)
 		if err != nil {
-			p.logger.Errorf("error reading message in kafka: %s", err.Error())
+			p.logger.Errorw("error reading message in kafka: %s", err.Error())
 			break
 		}
 		fmt.Println(string(b))
 	}
 
 	if err := batch.Close(); err != nil {
-		p.logger.Errorf("error closing batch in kafka: %s", err.Error())
+		p.logger.Errorw("error closing batch in kafka: %s", err.Error())
 		return err
 	}
 
 	if err := conn.Close(); err != nil {
-		p.logger.Errorf("error closing connection in kafka: %s", err.Error())
+		p.logger.Errorw("error closing connection in kafka: %s", err.Error())
 		return err
 	}
 	return nil

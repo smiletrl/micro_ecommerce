@@ -13,6 +13,8 @@ import (
 )
 
 type Provider interface {
+	Find(collection string, ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
+
 	FindOne(collection string, ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) *mongo.SingleResult
 
 	InsertOne(collection string, ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
@@ -51,6 +53,13 @@ func NewProvider(cfg config.MongodbConfig, tracing tracing.Provider) (Provider, 
 
 	mdb := client.Database(cfg.Name)
 	return provider{mdb, client, tracing}, nil
+}
+
+func (p provider) Find(collection string, ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error) {
+	span, ctx := p.tracing.StartSpan(ctx, "Mongodb Find: "+collection)
+	defer p.tracing.FinishSpan(span)
+
+	return p.mdb.Collection(collection).Find(ctx, filter, opts...)
 }
 
 func (p provider) FindOne(collection string, ctx context.Context, filter interface{},

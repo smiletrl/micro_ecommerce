@@ -3,7 +3,7 @@ package logger
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"go.uber.org/zap"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 )
 
 // Service is logger service
@@ -13,11 +13,11 @@ type Service interface {
 
 type service struct {
 	repo   Repository
-	logger *zap.SugaredLogger
+	logger logger.Provider
 }
 
 // NewService is to create new service
-func NewService(repo Repository, logger *zap.SugaredLogger) Service {
+func NewService(repo Repository, logger logger.Provider) Service {
 	return service{repo, logger}
 }
 

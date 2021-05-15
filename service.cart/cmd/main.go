@@ -44,7 +44,7 @@ func main() {
 	tracingProvider := tracing.NewProvider()
 	closer, err := tracingProvider.SetupTracer(constants.TracingCart, cfg)
 	if err != nil {
-		logger.Fatal("tracing", err)
+		panic(err)
 	}
 	defer closer.Close()
 
@@ -59,7 +59,7 @@ func main() {
 	// redis
 	redis, err := redis.NewProvider(cfg, tracingProvider)
 	if err != nil {
-		logger.Fatal("redis", err)
+		panic(err)
 	}
 
 	jwtProvider := jwt.NewProvider(cfg.JwtSecret)
@@ -77,7 +77,7 @@ func main() {
 	cart.RegisterHandlers(echoGroup, cartService, jwtProvider)
 
 	// start server
-	logger.Fatal("echo start", e.Start(constants.RestPort))
+	panic(e.Start(constants.RestPort))
 }
 
 // product proxy

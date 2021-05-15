@@ -32,16 +32,17 @@ func main() {
 	logger := logger.NewProvider(cfg.Logger)
 	defer logger.Close()
 
-	// echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
+	// init tracing
 	tracingProvider := tracing.NewProvider()
 	closer, err := tracingProvider.SetupTracer(constants.TracingPayment, cfg)
 	if err != nil {
 		logger.Fatal("tracing", err)
 	}
 	defer closer.Close()
+
+	// echo instance
+	e := echo.New()
+	echoGroup := e.Group("/api/v1")
 
 	// middleware
 	e.Use(accesslog.Middleware(logger))

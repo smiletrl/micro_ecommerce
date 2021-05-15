@@ -5,10 +5,10 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/kafka"
-	"go.uber.org/zap"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 )
 
-func Consume(cfg config.KafkaConfig, logger *zap.SugaredLogger, topic constants.KafkaTopic, partition int) error {
+func Consume(cfg config.KafkaConfig, logger logger.Provider, topic constants.KafkaTopic, partition int) error {
 	kafka := kafka.NewProvider(cfg, logger)
 	// @todo maybe define different consumer callbacks.
 	err := kafka.Consume(context.Background(), topic, partition)

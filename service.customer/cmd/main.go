@@ -39,7 +39,7 @@ func main() {
 	tracingProvider := tracing.NewProvider()
 	closer, err := tracingProvider.SetupTracer(constants.TracingCustomer, cfg)
 	if err != nil {
-		logger.Fatal("tracing", err)
+		panic(err)
 	}
 	defer closer.Close()
 
@@ -54,7 +54,7 @@ func main() {
 	// postgres connection
 	pdb, err := postgresql.NewProvider(cfg, tracingProvider)
 	if err != nil {
-		logger.Fatal("postgres", err)
+		panic(err)
 	}
 	defer pdb.Close()
 
@@ -72,5 +72,5 @@ func main() {
 	customer.RegisterHandlers(echoGroup, customerService)
 
 	// Start server
-	e.Logger.Fatal(e.Start(constants.RestPort))
+	panic(e.Start(constants.RestPort))
 }
