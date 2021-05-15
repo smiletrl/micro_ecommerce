@@ -38,12 +38,11 @@ func main() {
 	defer logger.Close()
 
 	// init tracing
-	tracing := tracing.NewProvider()
-	closer, err := tracing.SetupTracer(constants.TracingPayment, cfg)
+	tracing, err := tracing.NewProvider(constants.TracingCart, cfg)
 	if err != nil {
-		logger.Fatal("tracing", err)
+		panic(err)
 	}
-	defer closer.Close()
+	defer tracing.Close()
 
 	// rocketMQ message
 	err = order.Consume(cfg.RocketMQ)

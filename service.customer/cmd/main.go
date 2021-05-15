@@ -40,12 +40,11 @@ func main() {
 	defer logger.Close()
 
 	// init tracing
-	tracing := tracing.NewProvider()
-	closer, err := tracing.SetupTracer(constants.TracingCustomer, cfg)
+	tracing, err := tracing.NewProvider(constants.TracingCart, cfg)
 	if err != nil {
 		panic(err)
 	}
-	defer closer.Close()
+	defer tracing.Close()
 
 	// init postgres
 	pdb, err := postgresql.NewProvider(cfg, tracing)

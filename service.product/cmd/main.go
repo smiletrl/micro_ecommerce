@@ -40,15 +40,14 @@ func main() {
 	defer logger.Close()
 
 	// init tracing
-	tracingProvider := tracing.NewProvider()
-	closer, err := tracingProvider.SetupTracer(constants.TracingProduct, cfg)
+	tracing, err := tracing.NewProvider(constants.TracingCart, cfg)
 	if err != nil {
 		panic(err)
 	}
-	defer closer.Close()
+	defer tracing.Close()
 
 	// mongodb connection
-	mdb, err := mongodb.NewProvider(cfg.MongoDB, tracingProvider)
+	mdb, err := mongodb.NewProvider(cfg.MongoDB, tracing)
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +55,7 @@ func main() {
 
 	p := provider{
 		config:  cfg,
-		tracing: tracingProvider,
+		tracing: tracing,
 		logger:  logger,
 		mongodb: mdb,
 	}

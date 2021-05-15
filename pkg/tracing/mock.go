@@ -11,8 +11,8 @@ import (
 
 type mockProvider struct{}
 
-func NewMockProvider() Provider {
-	return mockProvider{}
+func NewMockProvider() (Provider, error) {
+	return mockProvider{}, nil
 }
 
 func (m mockProvider) SetupTracer(serviceName string, c config.Config) (io.Closer, error) {
@@ -28,4 +28,7 @@ func (m mockProvider) StartSpan(c context.Context, operationName string) (opentr
 }
 
 func (p mockProvider) FinishSpan(span opentracing.Span) {
+}
+
+func (p mockProvider) Close() {
 }

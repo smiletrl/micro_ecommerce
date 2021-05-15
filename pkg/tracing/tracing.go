@@ -15,25 +15,23 @@ import (
 )
 
 type Provider interface {
-	// SetupTracer creates a new Jaeger tracer.
-	SetupTracer(serviceName string, c config.Config) (io.Closer, error)
-
 	// Middleware starts a root trace for each request.
 	Middleware(log logger.Provider) echo.MiddlewareFunc
 
 	StartSpan(c context.Context, operationName string) (opentracing.Span, context.Context)
 
-	// finsh span, primarily for mock purpose
+	// Finsh span, primarily for mock purpose
 	FinishSpan(span opentracing.Span)
+
+	// Close io
+	Close()
 }
 
-type provider struct{}
-
-func NewProvider() Provider {
-	return provider{}
+type provider struct {
+	closer io.Closer
 }
 
-func (p provider) SetupTracer(serviceName string, c config.Config) (io.Closer, error) {
+func NewProvider(serviceName string, c config.Config) (Provider, error) {
 	cfg := jaegercfg.Configuration{
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
@@ -50,7 +48,7 @@ func (p provider) SetupTracer(serviceName string, c config.Config) (io.Closer, e
 		jaegercfg.Logger(jaeger.StdLogger),
 	)
 
-	return closer, err
+	return provider{closer}, err
 }
 
 func (p provider) Middleware(log logger.Provider) echo.MiddlewareFunc {
@@ -94,6 +92,10 @@ func (p provider) StartSpan(ctx context.Context, operationName string) (opentrac
 
 func (p provider) FinishSpan(span opentracing.Span) {
 	span.Finish()
+}
+
+func (p provider) Close() {
+	p.closer.Close()
 }
 
 func (p provider) setSpanTags(req *http.Request, res *echo.Response, ip string, span opentracing.Span) {

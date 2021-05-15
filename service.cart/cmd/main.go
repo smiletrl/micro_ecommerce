@@ -45,12 +45,12 @@ func main() {
 	logger := logger.NewProvider(cfg.Logger)
 	defer logger.Close()
 
-	tracing := tracing.NewProvider()
-	closer, err := tracing.SetupTracer(constants.TracingCart, cfg)
+	// init tracing
+	tracing, err := tracing.NewProvider(constants.TracingCart, cfg)
 	if err != nil {
 		panic(err)
 	}
-	defer closer.Close()
+	defer tracing.Close()
 
 	// redis
 	redis, err := redis.NewProvider(cfg, tracing)
