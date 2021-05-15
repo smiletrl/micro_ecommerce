@@ -36,7 +36,8 @@ var _ = Describe("cart repository methods", func() {
 		}
 		config, err := config.Load(stage)
 		Expect(err).To(BeNil())
-		tracing := tracing.NewMockProvider()
+		tracing, err := tracing.NewMockProvider()
+		Expect(err).To(BeNil())
 		repo = NewRepository(redis.NewMockProvider(config, tracing), tracing)
 
 		c = context.Background()

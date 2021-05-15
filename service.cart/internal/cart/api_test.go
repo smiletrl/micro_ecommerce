@@ -27,7 +27,8 @@ func TestAPI(t *testing.T) {
 	e := echo.New()
 
 	logger := logger.NewMockProvider()
-	tracing := tracing.NewMockProvider()
+	tracing, err := tracing.NewMockProvider()
+	assert.NoError(t, err)
 
 	// middleware
 	e.Use(errors.Middleware(logger))
