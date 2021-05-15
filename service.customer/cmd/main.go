@@ -15,6 +15,13 @@ import (
 	"os"
 )
 
+type provider struct {
+	config  config.Config
+	tracing tracing.Provider
+	logger  logger.Provider
+	pdb     postgresql.Provider
+}
+
 func main() {
 	// stage
 	stage := os.Getenv(constants.Stage)
@@ -32,44 +39,51 @@ func main() {
 	logger := logger.NewProvider(cfg.Logger)
 	defer logger.Close()
 
-	// echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
-	tracingProvider := tracing.NewProvider()
-	closer, err := tracingProvider.SetupTracer(constants.TracingCustomer, cfg)
+	// init tracing
+	tracing := tracing.NewProvider()
+	closer, err := tracing.SetupTracer(constants.TracingCustomer, cfg)
 	if err != nil {
 		panic(err)
 	}
 	defer closer.Close()
 
-	// middleware
-	e.Use(accesslog.Middleware(logger))
-	e.Use(tracingProvider.Middleware(logger))
-	e.Use(errors.Middleware(logger))
-
-	// initialize health
-	healthcheck.RegisterHandlers(e.Group(""))
-
-	// postgres connection
-	pdb, err := postgresql.NewProvider(cfg, tracingProvider)
+	// init postgres
+	pdb, err := postgresql.NewProvider(cfg, tracing)
 	if err != nil {
 		panic(err)
 	}
 	defer pdb.Close()
 
-	// balance
-	balance.RegisterHandlers(echoGroup)
+	p := provider{
+		config:  cfg,
+		tracing: tracing,
+		logger:  logger,
+		pdb:     pdb,
+	}
+	buildRegisters(p)
+}
 
-	//err = balance.Consume(config.RocketMQ)
-	//if err != nil {
-	//	panic(err)
-	//}
+func buildRegisters(p provider) {
+	// echo instance
+	e := echo.New()
+
+	// middleware
+	e.Use(accesslog.Middleware(p.logger))
+	e.Use(p.tracing.Middleware(p.logger))
+	e.Use(errors.Middleware(p.logger))
+
+	// initialize health
+	healthcheck.RegisterHandlers(e.Group(""))
+
+	group := e.Group("/api/v1")
+
+	// balance
+	balance.RegisterHandlers(group)
 
 	// customer
-	customerRepo := customer.NewRepository(pdb)
-	customerService := customer.NewService(customerRepo, logger)
-	customer.RegisterHandlers(echoGroup, customerService)
+	customerRepo := customer.NewRepository(p.pdb)
+	customerService := customer.NewService(customerRepo, p.logger)
+	customer.RegisterHandlers(group, customerService)
 
 	// Start server
 	panic(e.Start(constants.RestPort))

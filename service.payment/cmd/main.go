@@ -15,6 +15,13 @@ import (
 	"os"
 )
 
+type provider struct {
+	config   config.Config
+	tracing  tracing.Provider
+	logger   logger.Provider
+	rocketmq rocketmq.Provider
+}
+
 func main() {
 	// stage
 	stage := os.Getenv(constants.Stage)
@@ -33,30 +40,44 @@ func main() {
 	defer logger.Close()
 
 	// init tracing
-	tracingProvider := tracing.NewProvider()
-	closer, err := tracingProvider.SetupTracer(constants.TracingPayment, cfg)
+	tracing := tracing.NewProvider()
+	closer, err := tracing.SetupTracer(constants.TracingPayment, cfg)
 	if err != nil {
 		logger.Fatal("tracing", err)
 	}
 	defer closer.Close()
 
-	// echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
-	// middleware
-	e.Use(accesslog.Middleware(logger))
-	e.Use(tracingProvider.Middleware(logger))
-	e.Use(errors.Middleware(logger))
-
-	healthcheck.RegisterHandlers(e.Group(""))
-
-	rocketMQProvider := rocketmq.NewProvider(cfg.RocketMQ)
+	// init rocketmq
+	rocketmq := rocketmq.NewProvider(cfg.RocketMQ)
 	//if err = rocketMQProvider.CreateTopic(context.Background(), constants.RocketMQTopicPayment); err != nil {
 	//	panic(err)
 	//}
-	payment.RegisterHandlers(echoGroup, rocketMQProvider)
+
+	p := provider{
+		config:   cfg,
+		tracing:  tracing,
+		logger:   logger,
+		rocketmq: rocketmq,
+	}
+	buildRegisters(p)
+}
+
+func buildRegisters(p provider) {
+	// echo instance
+	e := echo.New()
+
+	// middleware
+	e.Use(accesslog.Middleware(p.logger))
+	e.Use(p.tracing.Middleware(p.logger))
+	e.Use(errors.Middleware(p.logger))
+
+	// initialize health
+	healthcheck.RegisterHandlers(e.Group(""))
+
+	group := e.Group("/api/v1")
+
+	payment.RegisterHandlers(group, p.rocketmq)
 
 	// Start rest server
-	e.Logger.Fatal(e.Start(constants.RestPort))
+	panic(e.Start(constants.RestPort))
 }

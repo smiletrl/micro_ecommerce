@@ -15,6 +15,13 @@ import (
 	"os"
 )
 
+type provider struct {
+	config  config.Config
+	tracing tracing.Provider
+	logger  logger.Provider
+	mongodb mongodb.Provider
+}
+
 func main() {
 	// stage
 	stage := os.Getenv(constants.Stage)
@@ -32,52 +39,60 @@ func main() {
 	logger := logger.NewProvider(cfg.Logger)
 	defer logger.Close()
 
-	// echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
+	// init tracing
 	tracingProvider := tracing.NewProvider()
 	closer, err := tracingProvider.SetupTracer(constants.TracingProduct, cfg)
 	if err != nil {
-		logger.Fatal("tracing", err)
+		panic(err)
 	}
 	defer closer.Close()
 
-	// middleware
-	e.Use(accesslog.Middleware(logger))
-	e.Use(tracingProvider.Middleware(logger))
-	e.Use(errors.Middleware(logger))
-
-	// initialize health
-	healthcheck.RegisterHandlers(e.Group(""))
-
 	// mongodb connection
-	db, err := mongodb.NewProvider(cfg.MongoDB, tracingProvider)
+	mdb, err := mongodb.NewProvider(cfg.MongoDB, tracingProvider)
 	if err != nil {
-		logger.Fatal("mongodb", err)
+		panic(err)
 	}
-	defer db.Close()
+	defer mdb.Close()
 
-	// product
-	productRepo := product.NewRepository(db)
-	productService := product.NewService(productRepo, logger)
-	product.RegisterHandlers(echoGroup, productService)
+	p := provider{
+		config:  cfg,
+		tracing: tracingProvider,
+		logger:  logger,
+		mongodb: mdb,
+	}
+	buildRegisters(p)
 
 	//err = product.Consume(config.RocketMQ)
 	//if err != nil {
 	//	panic(err)
 	//}
 
+}
+
+func buildRegisters(p provider) {
+	// echo instance
+	e := echo.New()
+
+	// middleware
+	e.Use(accesslog.Middleware(p.logger))
+	e.Use(p.tracing.Middleware(p.logger))
+	e.Use(errors.Middleware(p.logger))
+
+	// initialize health
+	healthcheck.RegisterHandlers(e.Group(""))
+
+	group := e.Group("/api/v1")
+
+	// product
+	productRepo := product.NewRepository(p.mongodb)
+	productService := product.NewService(productRepo, p.logger)
+	product.RegisterHandlers(group, productService)
+
 	// start grpc server
 	go func() {
-		err = rpcserver.Register(logger)
-		if err != nil {
-			logger.Fatal("grpc", err)
-		}
+		panic(rpcserver.Register(p.logger))
 	}()
 
 	// Start rest server
-	if err = e.Start(constants.RestPort); err != nil {
-		logger.Fatal("echo instance", err)
-	}
+	panic(e.Start(constants.RestPort))
 }

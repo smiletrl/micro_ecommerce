@@ -16,6 +16,14 @@ import (
 	"os"
 )
 
+type provider struct {
+	config  config.Config
+	logger  logger.Provider
+	tracing tracing.Provider
+	kafka   kafka.Provider
+	jwt     jwt.Provider
+}
+
 func main() {
 	// stage
 	stage := os.Getenv(constants.Stage)
@@ -34,23 +42,12 @@ func main() {
 	defer logger.Close()
 
 	// init tracing
-	tracingProvider := tracing.NewProvider()
-	closer, err := tracingProvider.SetupTracer(constants.TracingPayment, cfg)
+	tracing := tracing.NewProvider()
+	closer, err := tracing.SetupTracer(constants.TracingPayment, cfg)
 	if err != nil {
-		logger.Fatal("tracing", err)
+		panic(err)
 	}
 	defer closer.Close()
-
-	// echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
-	// middleware
-	e.Use(accesslog.Middleware(logger))
-	e.Use(tracingProvider.Middleware(logger))
-	e.Use(errors.Middleware(logger))
-
-	healthcheck.RegisterHandlers(e.Group(""))
 
 	// kafka message
 	kafkaProvider := kafka.NewProvider(cfg.Kafka, logger)
@@ -68,10 +65,36 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	loggerRepo := loggerd.NewRepository(kafkaProvider)
-	loggerService := loggerd.NewService(loggerRepo, logger)
-	loggerd.RegisterHandlers(echoGroup, loggerService, jwtProvider)
 
-	// Start server
+	p := provider{
+		config:  cfg,
+		tracing: tracing,
+		logger:  logger,
+		kafka:   kafkaProvider,
+		jwt:     jwtProvider,
+	}
+	buildRegisters(p)
+}
+
+func buildRegisters(p provider) {
+	// echo instance
+	e := echo.New()
+
+	// middleware
+	e.Use(accesslog.Middleware(p.logger))
+	e.Use(p.tracing.Middleware(p.logger))
+	e.Use(errors.Middleware(p.logger))
+
+	// initialize health
+	healthcheck.RegisterHandlers(e.Group(""))
+
+	group := e.Group("/api/v1")
+
+	// logger
+	loggerRepo := loggerd.NewRepository(p.kafka)
+	loggerService := loggerd.NewService(loggerRepo, p.logger)
+	loggerd.RegisterHandlers(group, loggerService, p.jwt)
+
+	// Start rest server
 	panic(e.Start(constants.RestPort))
 }

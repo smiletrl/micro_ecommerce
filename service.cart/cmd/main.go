@@ -20,6 +20,14 @@ import (
 	"os"
 )
 
+type provider struct {
+	config  config.Config
+	tracing tracing.Provider
+	logger  logger.Provider
+	jwt     jwt.Provider
+	rdb     redis.Provider
+}
+
 func main() {
 	// stage
 	stage := os.Getenv(constants.Stage)
@@ -37,47 +45,29 @@ func main() {
 	logger := logger.NewProvider(cfg.Logger)
 	defer logger.Close()
 
-	// echo instance
-	e := echo.New()
-	echoGroup := e.Group("/api/v1")
-
-	tracingProvider := tracing.NewProvider()
-	closer, err := tracingProvider.SetupTracer(constants.TracingCart, cfg)
+	tracing := tracing.NewProvider()
+	closer, err := tracing.SetupTracer(constants.TracingCart, cfg)
 	if err != nil {
 		panic(err)
 	}
 	defer closer.Close()
 
-	// middleware
-	e.Use(accesslog.Middleware(logger))
-	e.Use(tracingProvider.Middleware(logger))
-	e.Use(errors.Middleware(logger))
-
-	// initialize service
-	healthcheck.RegisterHandlers(e.Group(""))
-
 	// redis
-	redis, err := redis.NewProvider(cfg, tracingProvider)
+	redis, err := redis.NewProvider(cfg, tracing)
 	if err != nil {
 		panic(err)
 	}
 
 	jwtProvider := jwt.NewProvider(cfg.JwtSecret)
 
-	// product grpc client.
-	pclient, err := productClient.NewClient(cfg.InternalServer.Product, tracingProvider, logger)
-	if err != nil {
-		panic(err)
+	p := provider{
+		config:  cfg,
+		tracing: tracing,
+		logger:  logger,
+		jwt:     jwtProvider,
+		rdb:     redis,
 	}
-
-	// cart
-	cartRepo := cart.NewRepository(redis, tracingProvider)
-	productProxy := product{pclient}
-	cartService := cart.NewService(cartRepo, productProxy, logger)
-	cart.RegisterHandlers(echoGroup, cartService, jwtProvider)
-
-	// start server
-	panic(e.Start(constants.RestPort))
+	buildRegisters(p)
 }
 
 // product proxy
@@ -91,4 +81,35 @@ func (p product) GetSkuStock(c context.Context, skuID string) (int, error) {
 
 func (p product) GetSkuProperties(c context.Context, skuIDs []string) ([]entity.SkuProperty, error) {
 	return p.client.GetSkuProperties(c, skuIDs)
+}
+
+func buildRegisters(p provider) {
+	// echo instance
+	e := echo.New()
+
+	// middleware
+	e.Use(accesslog.Middleware(p.logger))
+	e.Use(p.tracing.Middleware(p.logger))
+	e.Use(errors.Middleware(p.logger))
+
+	// initialize health
+	healthcheck.RegisterHandlers(e.Group(""))
+
+	group := e.Group("/api/v1")
+
+	// cart
+	cartRepo := cart.NewRepository(p.rdb, p.tracing)
+
+	// product grpc client.
+	pclient, err := productClient.NewClient(p.config.InternalServer.Product, p.tracing, p.logger)
+	if err != nil {
+		panic(err)
+	}
+
+	productProxy := product{pclient}
+	cartService := cart.NewService(cartRepo, productProxy, p.logger)
+	cart.RegisterHandlers(group, cartService, p.jwt)
+
+	// start server
+	panic(e.Start(constants.RestPort))
 }
