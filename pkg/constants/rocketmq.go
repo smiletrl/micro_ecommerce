@@ -1,12 +1,11 @@
 package constants
 
-type RocketMQTopic string
-
 type RocketMQGroup string
 
 type RocketMQTag string
 
 const (
-	RocketMQTopicPayment RocketMQTopic = "payment"
+	// RocketMQTopic rocketmq best practice is to only use one topic
+	RocketMQTopic        string        = "micro_ecommerce"
 	RocketMQGroupPayment RocketMQGroup = "payment"
 )

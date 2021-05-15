@@ -13,7 +13,7 @@ import (
 )
 
 type Provider interface {
-	CreateTopic(ctx context.Context, topic constants.RocketMQTopic) error
+	CreateDefaultTopic(ctx context.Context) error
 	CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error)
 	CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
 }
@@ -30,15 +30,15 @@ type provider struct {
 	brokerAddress string
 }
 
-func (p provider) CreateTopic(ctx context.Context, topic constants.RocketMQTopic) error {
-	// check if this topic existing already
+func (p provider) CreateDefaultTopic(ctx context.Context) error {
+	// @todo check if this topic existing already
 	topicAdmin, err := admin.NewAdmin(admin.WithResolver(primitive.NewPassthroughResolver(p.serverAddress)))
 	if err != nil {
 		panic(err)
 	}
 	err = topicAdmin.CreateTopic(
 		ctx,
-		admin.WithTopicCreate(string(topic)),
+		admin.WithTopicCreate(string(constants.RocketMQTopic)),
 		admin.WithBrokerAddrCreate(p.brokerAddress),
 	)
 	return err

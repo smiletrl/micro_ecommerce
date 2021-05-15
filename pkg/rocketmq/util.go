@@ -7,8 +7,8 @@ import (
 
 // CreateMessage creates a single message.
 // @todo maybe remove this function because its returned variable is allocated to heap.
-func CreateMessage(topic constants.RocketMQTopic, tag constants.RocketMQTag, body string) *primitive.Message {
-	message := primitive.NewMessage(string(topic), []byte(body))
+func CreateMessage(tag constants.RocketMQTag, body string) *primitive.Message {
+	message := primitive.NewMessage(constants.RocketMQTopic, []byte(body))
 	message.WithTag(string(tag))
 	return message
 }

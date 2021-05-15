@@ -20,7 +20,7 @@ func Consume(cfg config.RocketMQConfig) error {
 		Type:       consumer.TAG,
 		Expression: string(constants.RocketMQTag("Pay Succeed||order")),
 	}
-	err = c.Subscribe(string(constants.RocketMQTopicPayment), selecter, func(ctx context.Context,
+	err = c.Subscribe(constants.RocketMQTopic, selecter, func(ctx context.Context,
 		msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 
 		// Update order status from pending payment to next status, shipping/complete.

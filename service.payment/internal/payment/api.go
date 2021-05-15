@@ -67,7 +67,7 @@ func (r resource) WechatPayCallback(c echo.Context) error {
 
 		// @todo move these tags to constants
 		// order service will subscribe to this.
-		message := rocketmq.CreateMessage(constants.RocketMQTopicPayment, constants.RocketMQTag("Pay Succeed||order"), "order_id:xxx")
+		message := rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||order"), "order_id:xxx")
 		_, err := r.rocketProducer.SendSync(ctx, message)
 		if err != nil {
 			panic(err)
@@ -75,7 +75,7 @@ func (r resource) WechatPayCallback(c echo.Context) error {
 
 		// product service will subscribe to this.
 		// product will reduce the stock value.
-		message = rocketmq.CreateMessage(constants.RocketMQTopicPayment, constants.RocketMQTag("Pay Succeed||product||sku||quantity"), "sku_id:xxx||quantity:xxx")
+		message = rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||product||sku||quantity"), "sku_id:xxx||quantity:xxx")
 		_, err = r.rocketProducer.SendSync(ctx, message)
 		if err != nil {
 			panic(err)
@@ -83,7 +83,7 @@ func (r resource) WechatPayCallback(c echo.Context) error {
 
 		// customer service will subscribe to this.
 		// if this payment type/method is `balance`, customer's balance should be reduced.
-		message = rocketmq.CreateMessage(constants.RocketMQTopicPayment, constants.RocketMQTag("Pay Succeed||method||customer||balance"), "customer_id:xxx||amount:xxx")
+		message = rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||method||customer||balance"), "customer_id:xxx||amount:xxx")
 		_, err = r.rocketProducer.SendSync(ctx, message)
 		if err != nil {
 			panic(err)

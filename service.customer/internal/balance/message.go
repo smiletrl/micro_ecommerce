@@ -20,7 +20,7 @@ func Consume(cfg config.RocketMQConfig) error {
 		Type:       consumer.TAG,
 		Expression: string(constants.RocketMQTag("Pay Succeed||method||customer||balance")),
 	}
-	err = c.Subscribe(string(constants.RocketMQTopicPayment), selecter, func(ctx context.Context,
+	err = c.Subscribe(constants.RocketMQTopic, selecter, func(ctx context.Context,
 		msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 
 		// Reduce the customer balance value
