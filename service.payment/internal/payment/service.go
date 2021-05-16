@@ -66,12 +66,14 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 			return false, err.Error()
 		}
 
-		err = s.message.ProduceBalanceComplete(ctx, ntf.OutTradeNo, paymentMethod.CustomerID, paymentMethod.Amount)
-		if err != nil {
-			msg := fmt.Sprintf("order id: %s with error: %s", ntf.OutTradeNo, err.Error())
-			s.logger.Errorw("payment send balance complete message", msg)
+		if paymentMethod.Method == "" {
+			err = s.message.ProduceBalanceComplete(ctx, ntf.OutTradeNo, paymentMethod.CustomerID, paymentMethod.Amount)
+			if err != nil {
+				msg := fmt.Sprintf("order id: %s with error: %s", ntf.OutTradeNo, err.Error())
+				s.logger.Errorw("payment send balance complete message", msg)
 
-			return false, err.Error()
+				return false, err.Error()
+			}
 		}
 
 		// Save the order id processed flag, so this callback will not be invoked at the same order again.
