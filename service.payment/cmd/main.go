@@ -89,7 +89,7 @@ func buildRegisters(p provider) {
 	group := e.Group("/api/v1")
 
 	paymentRepo := payment.NewRepository(p.pdb)
-	paymentService := payment.NewService(paymentRepo, p.rocketmq, p.logger)
+	paymentService := payment.NewService(paymentRepo, p.rocketmq, p.tracing, p.logger)
 	payment.RegisterHandlers(group, paymentService)
 
 	// Start rest server

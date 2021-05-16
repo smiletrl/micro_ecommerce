@@ -6,6 +6,7 @@ import (
 	mq "github.com/apache/rocketmq-client-go/v2"
 	wePayment "github.com/medivhzhan/weapp/payment"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"net/http"
 )
 
@@ -23,8 +24,8 @@ type service struct {
 }
 
 // NewService is to create new service
-func NewService(repo Repository, rocketMQ mq.Producer, logger logger.Provider) Service {
-	message := NewMessage(rocketMQ)
+func NewService(repo Repository, rocketMQ mq.Producer, tracing tracing.Provider, logger logger.Provider) Service {
+	message := NewMessage(rocketMQ, tracing)
 	return &service{repo, rocketMQ, message, logger}
 }
 
@@ -46,6 +47,7 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 		}
 
 		// Send notification to rocketmq.
+
 		// @todo use transaction for below two messages. If one message fails to send,
 		// rollback the other one.
 		paymentMethod, err := s.repo.GetPaymentMethod(ctx, ntf.OutTradeNo)
@@ -56,7 +58,7 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 			return false, err.Error()
 		}
 
-		err = s.message.SendOrderComplete(ctx, ntf.OutTradeNo)
+		err = s.message.ProduceOrderComplete(ctx, ntf.OutTradeNo)
 		if err != nil {
 			msg := fmt.Sprintf("order id: %s with error: %s", ntf.OutTradeNo, err.Error())
 			s.logger.Errorw("payment send order complete message", msg)
@@ -64,7 +66,7 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 			return false, err.Error()
 		}
 
-		err = s.message.SendBalanceComplete(ctx, paymentMethod.CustomerID, paymentMethod.Amount)
+		err = s.message.ProduceBalanceComplete(ctx, ntf.OutTradeNo, paymentMethod.CustomerID, paymentMethod.Amount)
 		if err != nil {
 			msg := fmt.Sprintf("order id: %s with error: %s", ntf.OutTradeNo, err.Error())
 			s.logger.Errorw("payment send balance complete message", msg)
