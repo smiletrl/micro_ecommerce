@@ -58,6 +58,7 @@ func main() {
 		panic(err)
 	}
 
+	// jwt
 	jwtProvider := jwt.NewProvider(cfg.JwtSecret)
 
 	p := provider{

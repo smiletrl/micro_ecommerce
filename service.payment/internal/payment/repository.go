@@ -3,11 +3,12 @@ package payment
 import (
 	"context"
 	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 )
 
 // Repository db repository
 type Repository interface {
-	// Get payment success flag
+	// Get payment success flag.
 	GetProcessedFlag(ctx context.Context, orderID string) (bool, error)
 
 	// Update payment success flag
@@ -18,18 +19,21 @@ type Repository interface {
 
 type repository struct {
 	pdb postgresql.Provider
+	rdb redis.Provider
 }
 
 // NewRepository returns a new repostory
-func NewRepository(pdb postgresql.Provider) Repository {
-	return &repository{pdb}
+func NewRepository(pdb postgresql.Provider, rdb redis.Provider) Repository {
+	return &repository{pdb, rdb}
 }
 
 func (r repository) GetProcessedFlag(c context.Context, orderID string) (bool, error) {
+	// redis
 	return true, nil
 }
 
 func (r repository) SetProcessedFlag(c context.Context, orderID string) error {
+	// redis
 	return nil
 }
 
@@ -40,6 +44,7 @@ type paymentMethod struct {
 }
 
 func (r repository) GetPaymentMethod(ctx context.Context, orderID string) (paymentMethod, error) {
+	// postgres
 	return paymentMethod{
 		CustomerID: int64(12),
 		Amount:     1200,

@@ -11,6 +11,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.payment/internal/payment"
@@ -23,6 +24,7 @@ type provider struct {
 	logger   logger.Provider
 	rocketmq rocketmqLib.Producer
 	pdb      postgresql.Provider
+	rdb      redis.Provider
 }
 
 func main() {
@@ -64,12 +66,19 @@ func main() {
 	}
 	defer pdb.Close()
 
+	// redis
+	rdb, err := redis.NewProvider(cfg, tracing)
+	if err != nil {
+		panic(err)
+	}
+
 	p := provider{
 		config:   cfg,
 		tracing:  tracing,
 		logger:   logger,
 		rocketmq: producer,
 		pdb:      pdb,
+		rdb:      rdb,
 	}
 	buildRegisters(p)
 }
@@ -88,7 +97,7 @@ func buildRegisters(p provider) {
 
 	group := e.Group("/api/v1")
 
-	paymentRepo := payment.NewRepository(p.pdb)
+	paymentRepo := payment.NewRepository(p.pdb, p.rdb)
 	paymentService := payment.NewService(paymentRepo, p.rocketmq, p.tracing, p.logger)
 	payment.RegisterHandlers(group, paymentService)
 
