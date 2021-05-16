@@ -2,10 +2,12 @@ package balance
 
 import (
 	"context"
+	"fmt"
 	mq "github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
@@ -17,32 +19,37 @@ type Message interface {
 
 type message struct {
 	// use map when multiple consumers available
-	consumer   mq.PushConsumer
-	repo       Repository
-	optMap     map[constants.RocketMQTag]balanceOpt
-	messageMap map[constants.RocketMQTag]constants.RocketmqMessage
-	rocketmq   rocketmq.Provider
-	tracing    tracing.Provider
-	logger     logger.Provider
+	consumer mq.PushConsumer
+	repo     Repository
+	optMap   map[constants.RocketMQTag]messageOpt
+	rocketmq rocketmq.Provider
+	tracing  tracing.Provider
+	logger   logger.Provider
 }
 
-type balanceOpt func(ctx context.Context, customerID int64, amount int) error
+type consumeOpt func(ctx context.Context, customerID int64, amount int) error
+
+type messageOpt struct {
+	consumeOpt  consumeOpt
+	messageType entity.RocketmqMessage
+}
 
 func NewMessage(consumer mq.PushConsumer, repo Repository, rocketmq rocketmq.Provider, tracing tracing.Provider, logger logger.Provider) Message {
-	optMap := map[constants.RocketMQTag]balanceOpt{
-		constants.RocketMQTagBalanceIncrease: repo.Increase,
-		constants.RocketMQTagBalanceDecrease: repo.Decrease,
+	optMap := map[constants.RocketMQTag]messageOpt{
+		constants.RocketMQTagBalanceIncrease: messageOpt{
+			consumeOpt:  repo.Increase,
+			messageType: entity.RocketMQTagBalanceMessage{},
+		},
+		constants.RocketMQTagBalanceDecrease: messageOpt{
+			consumeOpt:  repo.Decrease,
+			messageType: entity.RocketMQTagBalanceMessage{},
+		},
 	}
-
-	msgMap := map[constants.RocketMQTag]constants.RocketmqMessage{
-		constants.RocketMQTagBalanceIncrease: constants.RocketMQTagBalanceMessage{},
-		constants.RocketMQTagBalanceDecrease: constants.RocketMQTagBalanceMessage{},
-	}
-	return message{consumer, repo, optMap, msgMap, rocketmq, tracing, logger}
+	return message{consumer, repo, optMap, rocketmq, tracing, logger}
 }
 
 func (m message) Subscribe() error {
-	defer func(){
+	defer func() {
 		if r := recover(); r != nil {
 			err, ok := r.(error)
 			if !ok {
@@ -50,7 +57,7 @@ func (m message) Subscribe() error {
 			}
 			m.logger.Errorw("rocketmq subscribe", err.Error())
 		}
-	}
+	}()
 
 	err := m.subscribeDecreaseEvent()
 	if err != nil {
@@ -69,7 +76,7 @@ func (m message) subscribeDecreaseEvent() error {
 		Type:       consumer.TAG,
 		Expression: string(constants.RocketMQTagBalanceDecrease),
 	}
-	err := m.consumer.Subscribe(constants.RocketMQTopic, selector, m.opt(constants.RocketMQTagBalanceDecrease))
+	err := m.consumer.Subscribe(constants.RocketMQTopic, selector, m.callback(constants.RocketMQTagBalanceDecrease))
 	return err
 }
 
@@ -78,22 +85,22 @@ func (m message) subscribeIncreaseEvent() error {
 		Type:       consumer.TAG,
 		Expression: string(constants.RocketMQTagBalanceIncrease),
 	}
-	err := m.consumer.Subscribe(constants.RocketMQTopic, selector, m.opt(constants.RocketMQTagBalanceIncrease))
+	err := m.consumer.Subscribe(constants.RocketMQTopic, selector, m.callback(constants.RocketMQTagBalanceIncrease))
 	return err
 }
 
-func (m message) opt(tag constants.RocketMQTag) constants.MessageOpt {
+func (m message) callback(tag constants.RocketMQTag) entity.RocketmqMessageOpt {
 	return func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 		var err error
 
-		// See if this message has been consumed already.
-		msg, ok := m.messageMap[tag]
+		// Parse the message content and get the custom message type
+		msg, ok := m.optMap[tag]
 		if !ok {
 			m.logger.Errorw("rocketmq balance message none-existing", string(tag))
 
 			return consumer.Commit, err
 		}
-		rm, err := msg.Parse(string(msgs[0].Body))
+		rm, err := msg.messageType.Parse(string(msgs[0].Body))
 		if err != nil {
 			// This message should be sent to dead letter queue because the message self
 			// is with incorrect format.
@@ -102,9 +109,10 @@ func (m message) opt(tag constants.RocketMQTag) constants.MessageOpt {
 			return consumer.Commit, err
 		}
 
+		// See if this message has been consumed already.
 		has, err := m.rocketmq.HasMessageConsumed(rm.Identifier())
 		if err != nil {
-			m.logger.Errorw("rocketmq balance message consumed", rm.Identifier())
+			m.logger.Errorw("rocketmq balance message consumed", string(rm.Identifier()))
 
 			return consumer.Commit, err
 		}
@@ -114,14 +122,8 @@ func (m message) opt(tag constants.RocketMQTag) constants.MessageOpt {
 			return consumer.ConsumeSuccess, nil
 		}
 
-		opt, ok := m.optMap[tag]
-		if !ok {
-			m.logger.Errorw("rocketmq balance opt none-existing", string(tag))
-
-			return consumer.Commit, err
-		}
-
-		err = opt(ctx, rm.GetOption("customer_id").(int64), rm.GetOption("amount").(int))
+		// Real consume happens here.
+		err = msg.consumeOpt(ctx, rm.GetOption("customer_id").(int64), rm.GetOption("amount").(int))
 		if err != nil {
 			m.logger.Errorw("rocketmq balance opt invoke", err.Error())
 

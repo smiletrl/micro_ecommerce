@@ -24,7 +24,8 @@ type provider struct {
 	config   config.Config
 	tracing  tracing.Provider
 	logger   logger.Provider
-	rocketmq rocketmqLib.PushConsumer
+	consumer rocketmqLib.PushConsumer
+	rocketmq rocketmq.Provider
 	pdb      postgresql.Provider
 }
 
@@ -60,7 +61,7 @@ func main() {
 	defer pdb.Close()
 
 	// init rocketmq
-	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ)
+	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ, pdb)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -71,10 +72,12 @@ func main() {
 	defer rocketmqProvider.ShutdownPushConsumer(consumer)
 
 	p := provider{
-		config:  cfg,
-		tracing: tracing,
-		logger:  logger,
-		pdb:     pdb,
+		config:   cfg,
+		tracing:  tracing,
+		logger:   logger,
+		pdb:      pdb,
+		consumer: consumer,
+		rocketmq: rocketmqProvider,
 	}
 	buildRegisters(p)
 }
@@ -95,7 +98,7 @@ func buildRegisters(p provider) {
 
 	// balance message
 	balanceRepo := balance.NewRepository(p.pdb)
-	balanceMessage := balance.NewMessage(p.rocketmq, balanceRepo, p.tracing, p.logger)
+	balanceMessage := balance.NewMessage(p.consumer, balanceRepo, p.rocketmq, p.tracing, p.logger)
 	if err := balanceMessage.Subscribe(); err != nil {
 		panic(err)
 	}

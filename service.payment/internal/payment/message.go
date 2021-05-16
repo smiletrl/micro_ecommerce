@@ -4,6 +4,7 @@ import (
 	"context"
 	mq "github.com/apache/rocketmq-client-go/v2"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 )
@@ -20,14 +21,14 @@ type message struct {
 	// see https://github.com/apache/rocketmq/pull/1525
 	tracing tracing.Provider
 
-	messageMap map[constants.RocketMQTag]constants.RocketmqMessage
+	messageMap map[constants.RocketMQTag]entity.RocketmqMessage
 }
 
 func NewMessage(producer mq.Producer, tracing tracing.Provider) Message {
 	// Init the rocketmq messsage map
-	messageMap := map[constants.RocketMQTag]constants.RocketmqMessage{
-		constants.RocketMQTagOrderPaid:       constants.RocketMQTagOrderPaidMessage{},
-		constants.RocketMQTagBalanceDecrease: constants.RocketMQTagBalanceMessage{},
+	messageMap := map[constants.RocketMQTag]entity.RocketmqMessage{
+		constants.RocketMQTagOrderPaid:       entity.RocketMQTagOrderPaidMessage{},
+		constants.RocketMQTagBalanceDecrease: entity.RocketMQTagBalanceMessage{},
 	}
 	return message{producer, tracing, messageMap}
 }

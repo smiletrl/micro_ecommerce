@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	rocketmqLib "github.com/apache/rocketmq-client-go/v2"
+	rocketConsumer "github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -8,16 +11,21 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.order/internal/order"
 	"os"
+	"time"
 )
 
 type provider struct {
-	config  config.Config
-	tracing tracing.Provider
-	logger  logger.Provider
+	config   config.Config
+	consumer rocketmqLib.PushConsumer
+	rocketmq rocketmq.Provider
+	tracing  tracing.Provider
+	pdb      postgresql.Provider
+	logger   logger.Provider
 }
 
 func main() {
@@ -44,16 +52,31 @@ func main() {
 	}
 	defer tracing.Close()
 
-	// rocketMQ message
-	err = order.Consume(cfg.RocketMQ)
+	// init postgres
+	pdb, err := postgresql.NewProvider(cfg, tracing)
 	if err != nil {
 		panic(err)
 	}
+	defer pdb.Close()
+
+	// init rocketmq
+	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ, pdb)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	consumer, err := rocketmqProvider.CreatePushConsumer(ctx, constants.RocketMQGroupPayment, rocketConsumer.Clustering)
+	if err != nil {
+		panic(err)
+	}
+	defer rocketmqProvider.ShutdownPushConsumer(consumer)
 
 	p := provider{
-		config:  cfg,
-		tracing: tracing,
-		logger:  logger,
+		config:   cfg,
+		tracing:  tracing,
+		logger:   logger,
+		consumer: consumer,
+		pdb:      pdb,
+		rocketmq: rocketmqProvider,
 	}
 	buildRegisters(p)
 }
@@ -70,6 +93,12 @@ func buildRegisters(p provider) {
 	// initialize health
 	healthcheck.RegisterHandlers(e.Group(""))
 
+	// order message
+	orderRepo := order.NewRepository(p.pdb)
+	orderMessage := order.NewMessage(p.consumer, orderRepo, p.rocketmq, p.tracing, p.logger)
+	if err := orderMessage.Subscribe(); err != nil {
+		panic(err)
+	}
 	//group := e.Group("/api/v1")
 
 	// Start rest server

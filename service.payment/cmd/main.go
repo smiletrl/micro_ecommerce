@@ -52,8 +52,15 @@ func main() {
 	}
 	defer tracing.Close()
 
+	// init postgres
+	pdb, err := postgresql.NewProvider(cfg, tracing)
+	if err != nil {
+		panic(err)
+	}
+	defer pdb.Close()
+
 	// init rocketmq
-	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ)
+	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ, pdb)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -62,13 +69,6 @@ func main() {
 		panic(err)
 	}
 	defer rocketmqProvider.ShutdownProducer(producer)
-
-	// init postgres
-	pdb, err := postgresql.NewProvider(cfg, tracing)
-	if err != nil {
-		panic(err)
-	}
-	defer pdb.Close()
 
 	// redis
 	rdb, err := redis.NewProvider(cfg, tracing)
