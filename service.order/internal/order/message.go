@@ -15,6 +15,8 @@ import (
 
 type Message interface {
 	Subscribe() error
+	// @todo add more produce message funcs
+	//ProduceSkuDecrease(ctx context.Context, orderID string) error
 }
 
 type message struct {
@@ -37,6 +39,7 @@ type messageOpt struct {
 func NewMessage(consumer mq.PushConsumer, repo Repository, rocketmq rocketmq.Provider, tracing tracing.Provider, logger logger.Provider) Message {
 	optMap := map[constants.RocketMQTag]messageOpt{
 		constants.RocketMQTagOrderPaid: messageOpt{
+			// @todo use service instead of repo. Need to be able to produce the message again.
 			consumeOpt:  repo.OrderPaid,
 			messageType: entity.RocketMQTagOrderPaidMessage{},
 		},
