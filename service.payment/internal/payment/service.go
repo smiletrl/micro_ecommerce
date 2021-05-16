@@ -30,8 +30,12 @@ func NewService(repo Repository, rocketMQ mq.Producer, tracing tracing.Provider,
 }
 
 func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *http.Request) error {
-	err := wePayment.HandlePaidNotify(w, req, func(ntf wePayment.PaidNotify) (bool, string) {
+	err := wePayment.HandlePaidNotify(w, req, s.payCallback())
+	return err
+}
 
+func (s *service) payCallback() func(ntf wePayment.PaidNotify) (bool, string) {
+	return func(ntf wePayment.PaidNotify) (bool, string) {
 		// Check the postgres db to find whether this order has been processed.
 		//@todo, the flag should include the two flags opts
 		flag, err := s.repo.GetProcessedFlag(ctx, ntf.OutTradeNo)
@@ -87,6 +91,5 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 		}
 
 		return true, ""
-	})
-	return err
+	}
 }
