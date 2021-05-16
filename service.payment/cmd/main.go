@@ -16,6 +16,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.payment/internal/payment"
 	"os"
+	"time"
 )
 
 type provider struct {
@@ -53,7 +54,10 @@ func main() {
 
 	// init rocketmq
 	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ)
-	producer, err := rocketmqProvider.CreateProducer(context.Background(), constants.RocketMQGroupPayment)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	producer, err := rocketmqProvider.CreateProducer(ctx, constants.RocketMQGroupPayment)
 	if err != nil {
 		panic(err)
 	}

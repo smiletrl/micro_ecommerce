@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	rocketmqLib "github.com/apache/rocketmq-client-go/v2"
+	rocketConsumer "github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/labstack/echo/v4"
 	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
@@ -9,17 +12,20 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/balance"
 	"github.com/smiletrl/micro_ecommerce/service.customer/internal/customer"
 	"os"
+	"time"
 )
 
 type provider struct {
-	config  config.Config
-	tracing tracing.Provider
-	logger  logger.Provider
-	pdb     postgresql.Provider
+	config   config.Config
+	tracing  tracing.Provider
+	logger   logger.Provider
+	rocketmq rocketmqLib.PushConsumer
+	pdb      postgresql.Provider
 }
 
 func main() {
@@ -53,6 +59,17 @@ func main() {
 	}
 	defer pdb.Close()
 
+	// init rocketmq
+	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	consumer, err := rocketmqProvider.CreatePushConsumer(ctx, constants.RocketMQGroupPayment, rocketConsumer.Clustering)
+	if err != nil {
+		panic(err)
+	}
+	defer rocketmqProvider.ShutdownPushConsumer(consumer)
+
 	p := provider{
 		config:  cfg,
 		tracing: tracing,
@@ -76,8 +93,11 @@ func buildRegisters(p provider) {
 
 	group := e.Group("/api/v1")
 
-	// balance
-	balance.RegisterHandlers(group)
+	// balance message
+	balanceMessage := balance.NewMessage(p.rocketmq, p.tracing, p.logger)
+	if err := balanceMessage.Consume(); err != nil {
+		panic(err)
+	}
 
 	// customer
 	customerRepo := customer.NewRepository(p.pdb)
