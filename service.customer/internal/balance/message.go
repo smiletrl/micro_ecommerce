@@ -7,6 +7,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
+	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 )
 
@@ -20,13 +21,14 @@ type message struct {
 	repo       Repository
 	optMap     map[constants.RocketMQTag]balanceOpt
 	messageMap map[constants.RocketMQTag]constants.RocketmqMessage
+	rocketmq   rocketmq.Provider
 	tracing    tracing.Provider
 	logger     logger.Provider
 }
 
 type balanceOpt func(ctx context.Context, customerID int64, amount int) error
 
-func NewMessage(consumer mq.PushConsumer, repo Repository, tracing tracing.Provider, logger logger.Provider) Message {
+func NewMessage(consumer mq.PushConsumer, repo Repository, rocketmq rocketmq.Provider, tracing tracing.Provider, logger logger.Provider) Message {
 	optMap := map[constants.RocketMQTag]balanceOpt{
 		constants.RocketMQTagBalanceIncrease: repo.Increase,
 		constants.RocketMQTagBalanceDecrease: repo.Decrease,
@@ -36,10 +38,19 @@ func NewMessage(consumer mq.PushConsumer, repo Repository, tracing tracing.Provi
 		constants.RocketMQTagBalanceIncrease: constants.RocketMQTagBalanceMessage{},
 		constants.RocketMQTagBalanceDecrease: constants.RocketMQTagBalanceMessage{},
 	}
-	return message{consumer, repo, optMap, msgMap, tracing, logger}
+	return message{consumer, repo, optMap, msgMap, rocketmq, tracing, logger}
 }
 
 func (m message) Subscribe() error {
+	defer func(){
+		if r := recover(); r != nil {
+			err, ok := r.(error)
+			if !ok {
+				err = fmt.Errorf("%v", r)
+			}
+			m.logger.Errorw("rocketmq subscribe", err.Error())
+		}
+	}
 
 	err := m.subscribeDecreaseEvent()
 	if err != nil {
@@ -76,7 +87,6 @@ func (m message) opt(tag constants.RocketMQTag) constants.MessageOpt {
 		var err error
 
 		// See if this message has been consumed already.
-
 		msg, ok := m.messageMap[tag]
 		if !ok {
 			m.logger.Errorw("rocketmq balance message none-existing", string(tag))
@@ -90,6 +100,18 @@ func (m message) opt(tag constants.RocketMQTag) constants.MessageOpt {
 			m.logger.Errorw("rocketmq balance message", string(msgs[0].Body))
 
 			return consumer.Commit, err
+		}
+
+		has, err := m.rocketmq.HasMessageConsumed(rm.Identifier())
+		if err != nil {
+			m.logger.Errorw("rocketmq balance message consumed", rm.Identifier())
+
+			return consumer.Commit, err
+		}
+
+		// If it has been consumed already, skip this message.
+		if has {
+			return consumer.ConsumeSuccess, nil
 		}
 
 		opt, ok := m.optMap[tag]

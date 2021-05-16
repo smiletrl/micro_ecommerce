@@ -119,6 +119,7 @@ github.com/gobuffalo/validate/v3/validators
 # github.com/gofrs/uuid v3.2.0+incompatible
 github.com/gofrs/uuid
 # github.com/gogo/protobuf v1.3.1
+## explicit
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
@@ -141,6 +142,9 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
+# github.com/google/uuid v1.1.2
+## explicit
+github.com/google/uuid
 # github.com/grpc-ecosystem/go-grpc-middleware v1.0.1-0.20190118093823-f849b5445de4
 ## explicit
 github.com/grpc-ecosystem/go-grpc-middleware
@@ -192,18 +196,12 @@ github.com/klauspost/compress/huff0
 github.com/klauspost/compress/snappy
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
-# github.com/labstack/echo v3.3.10+incompatible
-## explicit
-github.com/labstack/echo
 # github.com/labstack/echo/v4 v4.2.1
 ## explicit
 github.com/labstack/echo/v4
-github.com/labstack/echo/v4/middleware
 # github.com/labstack/gommon v0.3.0
-github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
-github.com/labstack/gommon/random
 # github.com/lib/pq v1.8.0
 github.com/lib/pq
 github.com/lib/pq/oid
@@ -474,8 +472,6 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
-golang.org/x/time/rate
 # golang.org/x/tools v0.0.0-20200818005847-188abfa75333
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata

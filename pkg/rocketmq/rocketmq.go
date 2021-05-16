@@ -10,6 +10,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
 	_ "sync"
 	"time"
 )
@@ -18,14 +19,17 @@ type Provider interface {
 	CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error)
 	CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
 
+	HasMessageConsumed(id constants.MessageIdentifier) (bool, error)
+
 	ShutdownProducer(producer rocketmq.Producer) error
 	ShutdownPushConsumer(consumer rocketmq.PushConsumer) error
 }
 
-func NewProvider(cfg config.RocketMQConfig) Provider {
+func NewProvider(cfg config.RocketMQConfig, pdb postgresql.Provider) Provider {
 	p := provider{
 		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
 		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
+		pdb:           pdb,
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -41,8 +45,7 @@ func NewProvider(cfg config.RocketMQConfig) Provider {
 type provider struct {
 	serverAddress []string
 	brokerAddress string
-	//producers     map[constants.RocketMQGroup]rocketmq.Producer
-	//mutex         sync.RWMutex
+	pdb           postgresql.Provider
 }
 
 func (p provider) createDefaultTopic(ctx context.Context) error {
@@ -91,6 +94,11 @@ func (p provider) CreatePushConsumer(ctx context.Context, group constants.Rocket
 		return nil, err
 	}
 	return c, nil
+}
+
+func (p provider) HasMessageConsumed(id constants.MessageIdentifier) (bool, error) {
+	// query p.pdb to get whether this identifier has been consumed.
+	return true, nil
 }
 
 func (p provider) ShutdownProducer(producer rocketmq.Producer) error {
