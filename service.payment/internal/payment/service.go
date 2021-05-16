@@ -33,6 +33,7 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 	err := wePayment.HandlePaidNotify(w, req, func(ntf wePayment.PaidNotify) (bool, string) {
 
 		// Check the postgres db to find whether this order has been processed.
+		//@todo, the flag should include the two flags opts
 		flag, err := s.repo.GetProcessedFlag(ctx, ntf.OutTradeNo)
 		if err != nil {
 			msg := fmt.Sprintf("order id: %s with error: %s", ntf.OutTradeNo, err.Error())
@@ -58,7 +59,7 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 			return false, err.Error()
 		}
 
-		err = s.message.ProduceOrderComplete(ctx, ntf.OutTradeNo)
+		err = s.message.ProduceOrderPaid(ctx, ntf.OutTradeNo)
 		if err != nil {
 			msg := fmt.Sprintf("order id: %s with error: %s", ntf.OutTradeNo, err.Error())
 			s.logger.Errorw("payment send order complete message", msg)
@@ -67,7 +68,7 @@ func (s *service) PaySucceed(ctx context.Context, w http.ResponseWriter, req *ht
 		}
 
 		if paymentMethod.Method == "" {
-			err = s.message.ProduceBalanceComplete(ctx, ntf.OutTradeNo, paymentMethod.CustomerID, paymentMethod.Amount)
+			err = s.message.ProduceBalanceDecrease(ctx, ntf.OutTradeNo, paymentMethod.CustomerID, paymentMethod.Amount)
 			if err != nil {
 				msg := fmt.Sprintf("order id: %s with error: %s", ntf.OutTradeNo, err.Error())
 				s.logger.Errorw("payment send balance complete message", msg)

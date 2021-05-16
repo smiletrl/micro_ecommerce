@@ -94,8 +94,9 @@ func buildRegisters(p provider) {
 	group := e.Group("/api/v1")
 
 	// balance message
-	balanceMessage := balance.NewMessage(p.rocketmq, p.tracing, p.logger)
-	if err := balanceMessage.Consume(); err != nil {
+	balanceRepo := balance.NewRepository(p.pdb)
+	balanceMessage := balance.NewMessage(p.rocketmq, balanceRepo, p.tracing, p.logger)
+	if err := balanceMessage.Subscribe(); err != nil {
 		panic(err)
 	}
 

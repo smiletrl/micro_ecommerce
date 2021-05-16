@@ -9,8 +9,8 @@ import (
 )
 
 type Message interface {
-	ProduceOrderComplete(ctx context.Context, orderID string) error
-	ProduceBalanceComplete(ctx context.Context, orderID string, customerID int64, amount int) error
+	ProduceOrderPaid(ctx context.Context, orderID string) error
+	ProduceBalanceDecrease(ctx context.Context, orderID string, customerID int64, amount int) error
 }
 
 type message struct {
@@ -19,26 +19,39 @@ type message struct {
 	// rocketmq doesn't have jaeger natively supported yet
 	// see https://github.com/apache/rocketmq/pull/1525
 	tracing tracing.Provider
+
+	messageMap map[constants.RocketMQTag]constants.RocketmqMessage
 }
 
 func NewMessage(producer mq.Producer, tracing tracing.Provider) Message {
-	return message{producer, tracing}
+	// Init the rocketmq messsage map
+	messageMap := map[constants.RocketMQTag]constants.RocketmqMessage{
+		constants.RocketMQTagOrderPaid:       constants.RocketMQTagOrderPaidMessage{},
+		constants.RocketMQTagBalanceDecrease: constants.RocketMQTagBalanceMessage{},
+	}
+	return message{producer, tracing, messageMap}
 }
 
-func (m message) ProduceOrderComplete(ctx context.Context, orderID string) error {
-	span, ctx := m.tracing.StartSpan(ctx, "RocketMQ: ProduceOrderComplete order id:  "+orderID)
+func (m message) ProduceOrderPaid(ctx context.Context, orderID string) error {
+	span, ctx := m.tracing.StartSpan(ctx, "RocketMQ: ProduceOrderComplete order id: "+orderID)
 	defer m.tracing.FinishSpan(span)
 
-	message := rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||order"), "order_id:"+orderID)
+	msg := m.messageMap[constants.RocketMQTagOrderPaid]
+	rm := msg.SetOptions(orderID)
+
+	message := rocketmq.CreateMessage(constants.RocketMQTagOrderPaid, rm.String())
 	_, err := m.producer.SendSync(ctx, message)
 	return err
 }
 
-func (m message) ProduceBalanceComplete(ctx context.Context, orderID string, customerID int64, amount int) error {
-	span, ctx := m.tracing.StartSpan(ctx, "RocketMQ: ProduceBalanceComplete customer id:  "+orderID)
+func (m message) ProduceBalanceDecrease(ctx context.Context, orderID string, customerID int64, amount int) error {
+	span, ctx := m.tracing.StartSpan(ctx, "RocketMQ: ProduceBalanceComplete customer id: "+orderID)
 	defer m.tracing.FinishSpan(span)
 
-	message := rocketmq.CreateMessage(constants.RocketMQTag("Pay Succeed||balance"), "order_id:")
+	msg := m.messageMap[constants.RocketMQTagBalanceDecrease]
+	rm := msg.SetOptions(customerID, amount)
+
+	message := rocketmq.CreateMessage(constants.RocketMQTagBalanceDecrease, rm.String())
 	_, err := m.producer.SendSync(ctx, message)
 	return err
 }
