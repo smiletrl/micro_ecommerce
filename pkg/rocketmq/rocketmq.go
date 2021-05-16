@@ -20,6 +20,7 @@ type Provider interface {
 	CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
 
 	HasMessageConsumed(id constants.MessageIdentifier) (bool, error)
+	SetMessageConsumed(id constants.MessageIdentifier) error
 
 	ShutdownProducer(producer rocketmq.Producer) error
 	ShutdownPushConsumer(consumer rocketmq.PushConsumer) error
@@ -97,8 +98,13 @@ func (p provider) CreatePushConsumer(ctx context.Context, group constants.Rocket
 }
 
 func (p provider) HasMessageConsumed(id constants.MessageIdentifier) (bool, error) {
-	// query p.pdb to get whether this identifier has been consumed.
+	// query p.pdb to get whether this identifier has been consumed from postgres
 	return true, nil
+}
+
+func (p provider) SetMessageConsumed(id constants.MessageIdentifier) error {
+	// query p.pdb to set identifier that it has been consumed
+	return nil
 }
 
 func (p provider) ShutdownProducer(producer rocketmq.Producer) error {

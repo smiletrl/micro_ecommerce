@@ -111,6 +111,14 @@ func (m message) callback(tag constants.RocketMQTag) entity.RocketmqMessageOpt {
 
 			return consumer.ConsumeRetryLater, err
 		}
+
+		// Set the identifier consumed in db.
+		if err := m.rocketmq.SetMessageConsumed(rm.Identifier()); err != nil {
+			m.logger.Errorw("rocketmq balance identifier consumed", err.Error())
+
+			// @todo need to workout a correct status
+			return consumer.ConsumeSuccess, err
+		}
 		return consumer.ConsumeSuccess, nil
 	}
 }
