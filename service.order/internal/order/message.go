@@ -23,7 +23,7 @@ type message struct {
 	// use map when multiple consumers available
 	consumer mq.PushConsumer
 	repo     Repository
-	optMap   map[constants.RocketMQTag]messageOpt
+	optMap   map[constants.RocketMQTag]consumeOpt
 	rocketmq rocketmq.Provider
 	tracing  tracing.Provider
 	logger   logger.Provider
@@ -31,18 +31,9 @@ type message struct {
 
 type consumeOpt func(ctx context.Context, orderID string) error
 
-type messageOpt struct {
-	consumeOpt  consumeOpt
-	messageType entity.RocketmqMessage
-}
-
 func NewMessage(consumer mq.PushConsumer, repo Repository, rocketmq rocketmq.Provider, tracing tracing.Provider, logger logger.Provider) Message {
-	optMap := map[constants.RocketMQTag]messageOpt{
-		constants.RocketMQTagOrderPaid: messageOpt{
-			// @todo use service instead of repo. Need to be able to produce the message again.
-			consumeOpt:  repo.OrderPaid,
-			messageType: entity.RocketMQTagOrderPaidMessage{},
-		},
+	optMap := map[constants.RocketMQTag]consumeOpt{
+		constants.RocketMQTagOrderPaid: repo.OrderPaid,
 	}
 	return message{consumer, repo, optMap, rocketmq, tracing, logger}
 }
@@ -76,28 +67,16 @@ func (m message) subscribeOrderPaidEvent() error {
 
 func (m message) callback(tag constants.RocketMQTag) entity.RocketmqMessageOpt {
 	return func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
-		var err error
 
-		// Parse the message content and get the custom message type
-		msg, ok := m.optMap[tag]
-		if !ok {
-			m.logger.Errorw("rocketmq order message none-existing", string(tag))
-
-			return consumer.Commit, err
-		}
-		rm, err := msg.messageType.Parse(string(msgs[0].Body))
+		rocketmsg, err := rocketmq.DecodeMessage(msgs[0].Body)
 		if err != nil {
-			// This message should be sent to dead letter queue because the message self
-			// is with incorrect format.
-			m.logger.Errorw("rocketmq order message", string(msgs[0].Body))
-
 			return consumer.Commit, err
 		}
 
 		// See if this message has been consumed already.
-		has, err := m.rocketmq.HasMessageConsumed(rm.Identifier())
+		has, err := m.rocketmq.HasMessageConsumed(rocketmsg.ID())
 		if err != nil {
-			m.logger.Errorw("rocketmq order message consumed", string(rm.Identifier()))
+			m.logger.Errorw("rocketmq order message consumed", string(rocketmsg.ID()))
 
 			return consumer.Commit, err
 		}
@@ -107,16 +86,24 @@ func (m message) callback(tag constants.RocketMQTag) entity.RocketmqMessageOpt {
 			return consumer.ConsumeSuccess, nil
 		}
 
+		// Get consume func
+		consume, ok := m.optMap[tag]
+		if !ok {
+			m.logger.Errorw("rocketmq order message none-existing", string(tag))
+
+			return consumer.Commit, err
+		}
+
 		// Real consume happens here.
-		err = msg.consumeOpt(ctx, rm.GetOption("order_id").(string))
+		err = consume(ctx, rocketmsg.Get("order_id").(string))
 		if err != nil {
 			m.logger.Errorw("rocketmq order opt invoke", err.Error())
 
 			return consumer.ConsumeRetryLater, err
 		}
 
-		// Set the identifier consumed in db.
-		if err := m.rocketmq.SetMessageConsumed(rm.Identifier()); err != nil {
+		// Set the message consumed in db.
+		if err := m.rocketmq.SetMessageConsumed(rocketmsg.ID()); err != nil {
 			m.logger.Errorw("rocketmq balance identifier consumed", err.Error())
 
 			// @todo need to workout a correct status

@@ -11,7 +11,6 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
-	_ "sync"
 	"time"
 )
 
@@ -19,8 +18,8 @@ type Provider interface {
 	CreateProducer(ctx context.Context, group constants.RocketMQGroup) (rocketmq.Producer, error)
 	CreatePushConsumer(ctx context.Context, group constants.RocketMQGroup, model consumer.MessageModel) (rocketmq.PushConsumer, error)
 
-	HasMessageConsumed(id constants.MessageIdentifier) (bool, error)
-	SetMessageConsumed(id constants.MessageIdentifier) error
+	HasMessageConsumed(id string) (bool, error)
+	SetMessageConsumed(id string) error
 
 	ShutdownProducer(producer rocketmq.Producer) error
 	ShutdownPushConsumer(consumer rocketmq.PushConsumer) error
@@ -97,12 +96,12 @@ func (p provider) CreatePushConsumer(ctx context.Context, group constants.Rocket
 	return c, nil
 }
 
-func (p provider) HasMessageConsumed(id constants.MessageIdentifier) (bool, error) {
+func (p provider) HasMessageConsumed(id string) (bool, error) {
 	// query p.pdb to get whether this identifier has been consumed from postgres
 	return true, nil
 }
 
-func (p provider) SetMessageConsumed(id constants.MessageIdentifier) error {
+func (p provider) SetMessageConsumed(id string) error {
 	// query p.pdb to set identifier that it has been consumed
 	return nil
 }
