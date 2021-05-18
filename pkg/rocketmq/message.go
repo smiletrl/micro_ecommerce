@@ -1,7 +1,9 @@
 package rocketmq
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/google/uuid"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
@@ -109,6 +111,8 @@ func (r *rocketMessage) Set(key string, val interface{}) RocketMessage {
 }
 
 // ---- util ---- //
+
+type MessageOpt func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error)
 
 func DecodeMessage(bytes []byte) (RocketMessage, error) {
 	m := rocketMessage{}

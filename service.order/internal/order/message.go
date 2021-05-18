@@ -7,7 +7,6 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
@@ -65,7 +64,7 @@ func (m message) subscribeOrderPaidEvent() error {
 	return err
 }
 
-func (m message) callback(tag constants.RocketMQTag) entity.RocketmqMessageOpt {
+func (m message) callback(tag constants.RocketMQTag) rocketmq.MessageOpt {
 	return func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 
 		rocketmsg, err := rocketmq.DecodeMessage(msgs[0].Body)

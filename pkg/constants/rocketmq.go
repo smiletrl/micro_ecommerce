@@ -4,8 +4,6 @@ type RocketMQGroup string
 
 type RocketMQTag string
 
-type MessageIdentifier string
-
 const (
 	// RocketMQTopic rocketmq best practice is to only use one topic
 	RocketMQTopic        string        = "micro_ecommerce"
