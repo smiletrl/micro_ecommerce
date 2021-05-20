@@ -60,7 +60,7 @@ func main() {
 	defer pdb.Close()
 
 	// init rocketmq
-	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ, pdb)
+	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ, pdb, constants.ServiceOrder)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 

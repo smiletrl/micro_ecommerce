@@ -60,7 +60,7 @@ func main() {
 	defer pdb.Close()
 
 	// init rocketmq
-	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ, pdb)
+	rocketmqProvider := rocketmq.NewProvider(cfg.RocketMQ, pdb, constants.ServiceOrder)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -99,6 +99,7 @@ func buildRegisters(p provider) {
 	if err := orderMessage.Subscribe(); err != nil {
 		panic(err)
 	}
+	// start the subscribe
 	//group := e.Group("/api/v1")
 
 	// Start rest server
