@@ -10,7 +10,7 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/healthcheck"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgres"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
@@ -24,7 +24,7 @@ type provider struct {
 	tracing  tracing.Provider
 	logger   logger.Provider
 	rocketmq rocketmqLib.Producer
-	pdb      postgresql.Provider
+	pdb      postgres.Provider
 	rdb      redis.Provider
 }
 
@@ -53,7 +53,7 @@ func main() {
 	defer tracing.Close()
 
 	// init postgres
-	pdb, err := postgresql.NewProvider(cfg, tracing)
+	pdb, err := postgres.NewProvider(cfg, tracing)
 	if err != nil {
 		panic(err)
 	}

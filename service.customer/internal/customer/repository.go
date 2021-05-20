@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/pkg/errors"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgres"
 	"time"
 )
 
@@ -24,11 +24,11 @@ type Repository interface {
 }
 
 type repository struct {
-	pdb postgresql.Provider
+	pdb postgres.Provider
 }
 
 // NewRepository returns a new repostory
-func NewRepository(pdb postgresql.Provider) Repository {
+func NewRepository(pdb postgres.Provider) Repository {
 	return &repository{pdb}
 }
 

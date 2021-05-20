@@ -2,7 +2,7 @@ package payment
 
 import (
 	"context"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgres"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 )
 
@@ -18,12 +18,12 @@ type Repository interface {
 }
 
 type repository struct {
-	pdb postgresql.Provider
+	pdb postgres.Provider
 	rdb redis.Provider
 }
 
 // NewRepository returns a new repostory
-func NewRepository(pdb postgresql.Provider, rdb redis.Provider) Repository {
+func NewRepository(pdb postgres.Provider, rdb redis.Provider) Repository {
 	return &repository{pdb, rdb}
 }
 

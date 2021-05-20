@@ -2,7 +2,7 @@ package balance
 
 import (
 	"context"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgres"
 )
 
 // Repository db repository
@@ -15,11 +15,11 @@ type Repository interface {
 }
 
 type repository struct {
-	pdb postgresql.Provider
+	pdb postgres.Provider
 }
 
 // NewRepository returns a new repostory
-func NewRepository(pdb postgresql.Provider) Repository {
+func NewRepository(pdb postgres.Provider) Repository {
 	return &repository{pdb}
 }
 

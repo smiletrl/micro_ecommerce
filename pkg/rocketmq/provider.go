@@ -10,7 +10,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/smiletrl/micro_ecommerce/pkg/postgresql"
+	"github.com/smiletrl/micro_ecommerce/pkg/postgres"
 	"time"
 )
 
@@ -58,7 +58,7 @@ type Provider interface {
 	StartPushConsumer(consumer rocketmq.PushConsumer) error
 }
 
-func NewProvider(cfg config.RocketMQConfig, pdb postgresql.Provider, serviceName string) Provider {
+func NewProvider(cfg config.RocketMQConfig, pdb postgres.Provider, serviceName string) Provider {
 	p := provider{
 		serverAddress: []string{fmt.Sprintf("%s:%s", cfg.Host, cfg.NameServerPort)},
 		brokerAddress: fmt.Sprintf("%s:%s", cfg.Host, cfg.BrokerPort),
@@ -80,7 +80,7 @@ type provider struct {
 	serverAddress []string
 	brokerAddress string
 	service       string
-	pdb           postgresql.Provider
+	pdb           postgres.Provider
 }
 
 func (p provider) createDefaultTopic(ctx context.Context) error {
