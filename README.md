@@ -70,7 +70,7 @@ Kiali UI
 ![Kiali UI](https://raw.githubusercontent.com/smiletrl/micro_ecommerce/master/assets/Kiali%20UI.png)
 
 ### Services
-Services include following at this moment. Different service might use different database & different language. Right now, Golang is the only language, but python, nodejs or vuejs might be picked for later service, such as analytical, frontend services.
+Services include following at this moment. Different service might use different database & different language. Right now, Golang is the only language, but python, nodejs or vuejs might be picked for other service, such as analytical, frontend services.
 
 Three databases are used at this moment, Redis, PostgresSQL, MongoDB.
 
