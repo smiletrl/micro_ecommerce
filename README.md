@@ -11,7 +11,7 @@ An ecommerce application with micro service infrastructure
 - [Services](#services)
 - [Local Installment, development & deployment](#local-installment-development--deployment)
 - [Project Structure](#project-structure)
-- [Note](#note)
+- [Paid Service](#paid-service)
 -------------------------
 
 ### Reference
@@ -159,6 +159,6 @@ github.com/smiletrl/micro_service
 |-- README.md
 ```
 
-## Note
+## Paid Service
 
-This repository is still in progress. Keep an eye on it if you are interested ^
+We offer paid service for ecommerce application development. [Get in touch](email:smiletrl@yahoo.com) if you want to talk ^
