@@ -95,6 +95,7 @@ func buildRegisters(p provider) {
 
 	// order message
 	orderRepo := order.NewRepository(p.pdb)
+	orderService := order.NewService(orderRepo, p.logger)
 	orderMessage := order.NewMessage(p.consumer, orderRepo, p.rocketmq, p.tracing, p.logger)
 	// start the subscribe
 	if err := orderMessage.Subscribe(); err != nil {
@@ -104,7 +105,8 @@ func buildRegisters(p provider) {
 	if err := p.rocketmq.StartPushConsumer(p.consumer); err != nil {
 		panic(err)
 	}
-	//group := e.Group("/api/v1")
+	group := e.Group("/api/v1")
+	order.RegisterHandlers(group, orderService)
 
 	// Start rest server
 	panic(e.Start(constants.RestPort))
