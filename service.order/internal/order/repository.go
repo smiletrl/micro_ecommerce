@@ -22,5 +22,6 @@ func NewRepository(pdb postgresql.Provider) Repository {
 }
 
 func (r repository) OrderPaid(ctx context.Context, orderID string) error {
+	// do necessary db update to service order tables, such as updating order status.
 	return nil
 }
