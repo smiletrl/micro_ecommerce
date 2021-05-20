@@ -10,6 +10,13 @@ import (
 )
 
 /*
+
+Interface RocketMessage represents one rocket message. It encodes our custom message to be sent to
+rocketmq broker, and decodes the message back to the custom message.
+
+This interface is to provide one unified way for encoding and decoding. For performance concern, the
+real implementation might use other approach instead of json marshal to encode/decode.
+
 Example Usage:
 
 Producer part:

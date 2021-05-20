@@ -38,16 +38,6 @@ func NewMessage(consumer mq.PushConsumer, repo Repository, rocketmq rocketmq.Pro
 }
 
 func (m message) Subscribe() error {
-	defer func() {
-		if r := recover(); r != nil {
-			err, ok := r.(error)
-			if !ok {
-				err = fmt.Errorf("%v", r)
-			}
-			m.logger.Errorw("rocketmq subscribe", err.Error())
-		}
-	}()
-
 	err := m.subscribeOrderPaidEvent()
 	if err != nil {
 		return err
@@ -66,6 +56,15 @@ func (m message) subscribeOrderPaidEvent() error {
 
 func (m message) callback(tag constants.RocketMQTag) rocketmq.MessageOpt {
 	return func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err, ok := r.(error)
+				if !ok {
+					err = fmt.Errorf("%v", r)
+				}
+				m.logger.Errorw("rocketmq subscribe callback error", err.Error())
+			}
+		}()
 
 		rocketmsg, err := rocketmq.DecodeMessage(msgs[0].Body)
 		if err != nil {

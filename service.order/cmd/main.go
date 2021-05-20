@@ -96,10 +96,11 @@ func buildRegisters(p provider) {
 	// order message
 	orderRepo := order.NewRepository(p.pdb)
 	orderMessage := order.NewMessage(p.consumer, orderRepo, p.rocketmq, p.tracing, p.logger)
+	// start the subscribe
 	if err := orderMessage.Subscribe(); err != nil {
 		panic(err)
 	}
-	// start the subscribe
+	// start the consumer. Consumer needs to start after subscribe.
 	//group := e.Group("/api/v1")
 
 	// Start rest server
