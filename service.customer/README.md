@@ -6,4 +6,4 @@ Customer includes internal `customer` & `balance` pkg. It uses database Postgres
 
 Customer `balance` subscribes to RocketMQ queue to reduce the balance value when a payment is paid with customer's balance method successfully.
 
-See more at `func Consume() error` from `internal/balance/message.go`.
+See more at `internal/balance/message.go`.
