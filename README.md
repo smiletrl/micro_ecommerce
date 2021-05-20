@@ -29,7 +29,6 @@ An ecommerce application with micro service infrastructure
 - [Istio](https://istio.io/)
 - [Terraform](https://www.terraform.io/)
 - [RocketMQ](https://rocketmq.apache.org/)
-- [Kafka](https://kafka.apache.org/)
 
 ### Background
 This project shows a simple ecommerce app running based on micro service architecture. It could run in a local environment with miniKube for local development. The primary language is Golang for these micro services. Kubernetes & istio are used for service register & discovery.
@@ -82,9 +81,8 @@ Check below links for service details. These services are not real functional, b
 - [Product](https://github.com/smiletrl/micro_ecommerce/tree/master/service.product) Golang & MongoDB & gRPC Server
 - [Order](https://github.com/smiletrl/micro_ecommerce/tree/master/service.order), Golang
 - [Payment](https://github.com/smiletrl/micro_ecommerce/tree/master/service.payment), Golang & RocketMQ
-- [Logger](https://github.com/smiletrl/micro_ecommerce/tree/master/service.logger), Golang & Kafka
 
-According to some big Chinese Companies(Alibaba, [Didi, 2018](https://developer.aliyun.com/article/664608)) reports, kafka could perform poorly when kafka topic numebr has increased above 256. This project is for ecommerce, which has pretty similar business logic like alibaba, so RocketMQ is picked for regular business logic process, while kafka is recommended for log process.
+According to some big Chinese Companies(Alibaba, [Didi, 2018](https://developer.aliyun.com/article/664608)) reports, kafka could perform poorly when kafka topic numebr has increased above 256. This project is for ecommerce, which has pretty similar business logic like alibaba, so RocketMQ is picked for regular business logic process.
 
 ### Local Installment, development & deployment
 - Install [Docker](https://www.docker.com/)
@@ -92,7 +90,6 @@ According to some big Chinese Companies(Alibaba, [Didi, 2018](https://developer.
 - Install [Istio](https://istio.io/latest/docs/setup/getting-started/) (client version: 1.9.2 in my mac)
 - Install [Terraform](https://www.terraform.io/) (Terraform v0.14.7 in my mac)
 - Install [RocketMQ](https://rocketmq.apache.org/docs/quick-start/) (version 4.8.0 in my mac). Note, this version only work with JDK 1.8. Choose this jdk version [in mac](https://mkyong.com/java/how-to-set-java_home-environment-variable-on-mac-os-x/). If you want to use JDK1.9+, more adjustment is required. See [issue](https://github.com/apache/rocketmq/issues/2553). The two commands might also be required for installment `mkdir -p ~/store/commitlog/`, `mkdir -p ~/store/consumequeue/`.
-- Install [Kafka](https://kafka.apache.org/quickstart)
 - Install local postgresSQL with command `make db-start`. This will install a local postgresSQL version through docker.
 - Create an account at docker.io(https://hub.docker.com/) if you don't have an account already. Create repositories, such as `docker.io/smiletrl/micro_ecommerce_customer` for customer service defined at this project. Replace `smiletrl` with your own account name. Create other repositories like customer services at hub.docker.com. Then try to replace `docker.io/smiletrl/micro_ecommerce_xxx` with `docker.io/{Your_account_name}/micro_ecommerce_xxx` at `/Mikefile`.
 - Upload local services docker images to docker.io. For example, to upload cart service, run command `make build-cart`. Use similar strategy for other services to upload service docker image to docker.io. Some service might be missing in makefile for build, play with it and see how it works^.
@@ -141,7 +138,6 @@ github.com/smiletrl/micro_service
 |   |-- errors
 |   |-- healthcheck
 |   |-- jwt
-|   |-- kafka
 |   |-- migration
 |   |-- mongodb
 |   |-- postgresql
