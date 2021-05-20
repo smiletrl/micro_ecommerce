@@ -55,6 +55,7 @@ type Provider interface {
 
 	ShutdownProducer(producer rocketmq.Producer) error
 	ShutdownPushConsumer(consumer rocketmq.PushConsumer) error
+	StartPushConsumer(consumer rocketmq.PushConsumer) error
 }
 
 func NewProvider(cfg config.RocketMQConfig, pdb postgresql.Provider, serviceName string) Provider {
@@ -123,10 +124,6 @@ func (p provider) CreatePushConsumer(ctx context.Context, group constants.Rocket
 	if err != nil {
 		return nil, err
 	}
-	err = c.Start()
-	if err != nil {
-		return nil, err
-	}
 	return c, nil
 }
 
@@ -146,4 +143,7 @@ func (p provider) ShutdownProducer(producer rocketmq.Producer) error {
 
 func (p provider) ShutdownPushConsumer(consumer rocketmq.PushConsumer) error {
 	return consumer.Shutdown()
+}
+func (p provider) StartPushConsumer(consumer rocketmq.PushConsumer) error {
+	return consumer.Start()
 }

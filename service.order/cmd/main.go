@@ -101,6 +101,9 @@ func buildRegisters(p provider) {
 		panic(err)
 	}
 	// start the consumer. Consumer needs to start after subscribe.
+	if err := p.rocketmq.StartPushConsumer(p.consumer); err != nil {
+		panic(err)
+	}
 	//group := e.Group("/api/v1")
 
 	// Start rest server

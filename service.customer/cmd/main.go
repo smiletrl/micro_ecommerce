@@ -102,6 +102,9 @@ func buildRegisters(p provider) {
 	if err := balanceMessage.Subscribe(); err != nil {
 		panic(err)
 	}
+	if err := p.rocketmq.StartPushConsumer(p.consumer); err != nil {
+		panic(err)
+	}
 
 	// customer
 	customerRepo := customer.NewRepository(p.pdb)
