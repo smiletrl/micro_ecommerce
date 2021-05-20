@@ -161,4 +161,4 @@ github.com/smiletrl/micro_service
 
 ## Paid Service
 
-We offer paid service for ecommerce application development. [Get in touch](email:smiletrl@yahoo.com) if you want to talk ^
+We offer paid service for ecommerce application development. [Get in touch](mailto:smiletrl@yahoo.com) if you want to talk ^
