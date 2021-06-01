@@ -169,16 +169,20 @@ RocketMQ has supported transaction message natively, which saves big effort to d
 
 For example, once order has paid successfully, we need to do a bunch of things:
 
+```
 ------- One TCC transaction -----
+
 1. Change payment service state
 2. Change order service state
 3. Change product sku stock
 
 ------ Subscribe to roceketmq message if (1,2,3) succeeds ----
+
 4. Add credit to customer
 5. Add commission to referer
 6. Send notification to staff
 ...
+```
 
 In above process, (1,2,3) can be implemented within TCC one transaction because they need strong consistency. One failed change will break the bussiness, and they need to be just one transaction.
 
