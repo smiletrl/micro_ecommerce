@@ -11,6 +11,7 @@ An ecommerce application with micro service infrastructure
 - [Services](#services)
 - [Local Installment, development & deployment](#local-installment-development--deployment)
 - [Project Structure](#project-structure)
+- [Distributed Transaction](#distributed-transaction)
 - [Paid Service](#paid-service)
 -------------------------
 
@@ -158,6 +159,34 @@ github.com/smiletrl/micro_service
 |-- Makefile
 |-- README.md
 ```
+
+## Distributed Transaction
+This project doesn't add the distributed transaction support. But if you are interested, here're what we recommend:
+
+For strong consistency scenarios, use [TCC approach](https://www.alibabacloud.com/blog/an-in-depth-analysis-of-distributed-transaction-solutions_597232). For eventual consistency scenarios, consider RocketMQ message.
+
+RocketMQ has supported transaction message natively, which saves big effort to do transaction message.
+
+For example, once order has paid successfully, we need to do a bunch of things:
+
+------- One TCC transaction -----
+1. Change payment service state
+2. Change order service state
+3. Change product sku stock
+
+------ Subscribe to roceketmq message if (1,2,3) succeeds ----
+4. Add credit to customer
+5. Add commission to referer
+6. Send notification to staff
+...
+
+In above process, (1,2,3) can be implemented within TCC one transaction because they need strong consistency. One failed change will break the bussiness, and they need to be just one transaction.
+
+(4,5,6) can be implemented with RocketMQ message. Even one step has failed, it doesn't affect the business flow. With RocketMQ retry and dead-letter-queue, we can finally solve possible issues, and get to the eventual consistency.
+
+If tcc transaction (1,2,3) has failed, then we won't send rocketmq message, on the other hand, the rocketmq message will be sent out. This flow can be within one RocketMQ transaction message, so we can guarantee (1,2,3) and rocketmq message to be within one transaction.
+
+This TCC framework https://github.com/opentrx/seata-golang is suggested.
 
 ## Paid Service
 
