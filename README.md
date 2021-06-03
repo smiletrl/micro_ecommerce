@@ -188,7 +188,7 @@ In above process, (1,2,3) can be implemented within TCC one transaction because 
 
 (4,5,6) can be implemented with RocketMQ message. Even one step has failed, it doesn't affect the business flow. With RocketMQ retry and dead-letter-queue, we can finally solve possible issues, and get to the eventual consistency.
 
-If tcc transaction (1,2,3) has failed, then we won't send rocketmq message, on the other hand, the rocketmq message will be sent out. This flow can be within one RocketMQ transaction message, so we can guarantee (1,2,3) and rocketmq message to be within one transaction.
+If tcc transaction (1,2,3) has failed, then we won't send rocketmq message. Otherwise, the rocketmq message will be sent out. This flow can be within one RocketMQ transaction message, so we can guarantee (1,2,3) and rocketmq message to be within one transaction.
 
 This TCC framework https://github.com/opentrx/seata-golang is suggested.
 
