@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/smiletrl/micro_ecommerce/pkg/config"
-	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+
+	"github.com/smiletrl/micro_ecommerce/pkg/config"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 )
 
 type Provider interface {

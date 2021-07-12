@@ -2,6 +2,7 @@ package customer
 
 import (
 	"context"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 )
 

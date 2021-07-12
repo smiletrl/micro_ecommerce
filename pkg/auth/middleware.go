@@ -2,9 +2,9 @@ package auth
 
 import (
 	"github.com/labstack/echo/v4"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
-	_ "net/http"
 )
 
 func CustomerMiddleware(jwtProvider jwt.Provider) echo.MiddlewareFunc {

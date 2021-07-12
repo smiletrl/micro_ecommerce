@@ -1,13 +1,14 @@
 package cart
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
-	_ "github.com/opentracing/opentracing-go"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/auth"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
-	"net/http"
 )
 
 // RegisterHandlers for handlers

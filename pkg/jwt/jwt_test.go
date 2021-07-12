@@ -2,8 +2,9 @@ package jwt
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCustomerToken(t *testing.T) {

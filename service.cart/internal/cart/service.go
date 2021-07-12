@@ -2,11 +2,12 @@ package cart
 
 import (
 	"context"
-	_ "github.com/labstack/echo/v4"
+	"strconv"
+
 	"github.com/pkg/errors"
+
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
-	"strconv"
 )
 
 // Service is cart service

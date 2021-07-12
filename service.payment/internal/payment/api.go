@@ -1,10 +1,10 @@
 package payment
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
-
-	"net/http"
 )
 
 // RegisterHandlers for routes

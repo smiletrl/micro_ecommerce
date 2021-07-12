@@ -1,11 +1,13 @@
 package jwt
 
 import (
+	"time"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"time"
 )
 
 type Provider interface {

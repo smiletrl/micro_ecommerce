@@ -1,8 +1,9 @@
 package healthcheck
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 // RegisterHandlers get health check api

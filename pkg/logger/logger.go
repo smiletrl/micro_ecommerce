@@ -2,13 +2,15 @@ package logger
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/aliyun/aliyun-log-go-sdk"
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
 	"github.com/gogo/protobuf/proto"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"os"
-	"time"
 )
 
 const (

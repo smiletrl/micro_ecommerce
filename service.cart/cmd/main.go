@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"os"
+
 	"github.com/labstack/echo/v4"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
@@ -12,12 +15,9 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/jwt"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
-	_ "github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.cart/internal/cart"
 	productClient "github.com/smiletrl/micro_ecommerce/service.product/external"
-
-	"os"
 )
 
 type provider struct {

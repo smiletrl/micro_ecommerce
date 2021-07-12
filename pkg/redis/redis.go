@@ -3,12 +3,14 @@ package redis
 import (
 	"context"
 	"crypto/tls"
+	"strings"
+	"time"
+
 	"github.com/go-redis/redis/v8"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
-	"strings"
-	"time"
 )
 
 type Provider interface {

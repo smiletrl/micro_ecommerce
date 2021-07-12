@@ -1,11 +1,13 @@
 package errors
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
-	"net/http"
 )
 
 // Error represents business error

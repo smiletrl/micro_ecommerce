@@ -2,11 +2,13 @@ package product
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
-	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
-	"github.com/smiletrl/micro_ecommerce/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
+	"github.com/smiletrl/micro_ecommerce/pkg/mongodb"
 )
 
 // Repository db repository

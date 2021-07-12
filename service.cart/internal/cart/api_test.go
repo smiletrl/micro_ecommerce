@@ -1,7 +1,13 @@
 package cart
 
 import (
+	"net/http"
+	"os"
+	"testing"
+
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/errors"
@@ -10,10 +16,6 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	"github.com/smiletrl/micro_ecommerce/pkg/test"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
-	"github.com/stretchr/testify/assert"
-	"net/http"
-	"os"
-	"testing"
 )
 
 var tests = []test.APITestCase{

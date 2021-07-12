@@ -2,10 +2,12 @@ package customer
 
 import (
 	"context"
+	"time"
+
 	"github.com/pkg/errors"
+
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/postgres"
-	"time"
 )
 
 // Repository db repository

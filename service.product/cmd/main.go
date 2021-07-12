@@ -1,7 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/labstack/echo/v4"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
@@ -12,7 +15,6 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.product/internal/product"
 	rpcserver "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/server"
-	"os"
 )
 
 type provider struct {

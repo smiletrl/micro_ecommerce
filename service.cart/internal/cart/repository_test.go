@@ -2,15 +2,16 @@ package cart
 
 import (
 	"context"
-	"github.com/smiletrl/micro_ecommerce/pkg/config"
-	"github.com/smiletrl/micro_ecommerce/pkg/constants"
-	"github.com/smiletrl/micro_ecommerce/pkg/redis"
-	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"os"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/smiletrl/micro_ecommerce/pkg/config"
+	"github.com/smiletrl/micro_ecommerce/pkg/constants"
+	"github.com/smiletrl/micro_ecommerce/pkg/redis"
+	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 )
 
 func TestCartRepository(t *testing.T) {

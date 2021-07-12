@@ -2,7 +2,9 @@ package payment
 
 import (
 	"context"
+
 	mq "github.com/apache/rocketmq-client-go/v2"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"

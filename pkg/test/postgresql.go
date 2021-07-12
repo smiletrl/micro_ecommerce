@@ -3,19 +3,20 @@ package test
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"runtime"
+
 	"github.com/gobuffalo/pop/v5"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	configd "github.com/smiletrl/micro_ecommerce/pkg/config"
-
 	"github.com/jmoiron/sqlx"
-	"io/ioutil"
-	"os"
-	"path"
-	"runtime"
+
+	configd "github.com/smiletrl/micro_ecommerce/pkg/config"
 )
 
 var (

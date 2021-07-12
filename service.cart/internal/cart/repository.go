@@ -3,11 +3,13 @@ package cart
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	goredis "github.com/go-redis/redis/v8"
+
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/redis"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
-	"strconv"
 )
 
 // Repository db repository

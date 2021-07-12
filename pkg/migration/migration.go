@@ -2,7 +2,9 @@ package migration
 
 import (
 	"fmt"
+
 	"github.com/gobuffalo/pop/v5"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 )
 

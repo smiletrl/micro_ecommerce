@@ -1,11 +1,13 @@
 package customer
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
-	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"net/http"
 	"strconv"
+
+	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
+
+	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 )
 
 // RegisterHandlers for customer

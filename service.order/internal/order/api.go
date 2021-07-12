@@ -1,10 +1,12 @@
 package order
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
-	"net/http"
 )
 
 // RegisterHandlers for customer

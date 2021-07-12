@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"os"
+	"time"
+
 	rocketmqLib "github.com/apache/rocketmq-client-go/v2"
 	rocketConsumer "github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/labstack/echo/v4"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/accesslog"
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
@@ -15,8 +19,6 @@ import (
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	"github.com/smiletrl/micro_ecommerce/service.order/internal/order"
-	"os"
-	"time"
 )
 
 type provider struct {

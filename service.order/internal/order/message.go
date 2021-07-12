@@ -3,9 +3,11 @@ package order
 import (
 	"context"
 	"fmt"
+
 	mq "github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/rocketmq"

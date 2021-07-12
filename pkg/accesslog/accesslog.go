@@ -1,10 +1,12 @@
 package accesslog
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"strconv"
 	"time"
+
+	"github.com/labstack/echo/v4"
+
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 )
 
 func Middleware(logger logger.Provider) echo.MiddlewareFunc {

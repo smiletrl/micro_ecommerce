@@ -2,20 +2,20 @@ package external
 
 import (
 	"context"
+	"time"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-	_ "github.com/labstack/echo/v4"
-	_ "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/entity"
 	errorsd "github.com/smiletrl/micro_ecommerce/pkg/errors"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/smiletrl/micro_ecommerce/pkg/tracing"
 	pb "github.com/smiletrl/micro_ecommerce/service.product/internal/rpc/proto"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
-	"time"
 )
 
 type Client interface {

@@ -8,10 +8,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
-	"github.com/smiletrl/micro_ecommerce/pkg/config"
-	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
+
+	"github.com/smiletrl/micro_ecommerce/pkg/config"
+	"github.com/smiletrl/micro_ecommerce/pkg/logger"
 )
 
 type Provider interface {

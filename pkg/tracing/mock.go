@@ -2,11 +2,13 @@ package tracing
 
 import (
 	"context"
+	"io"
+
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/config"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
-	"io"
 )
 
 type mockProvider struct{}

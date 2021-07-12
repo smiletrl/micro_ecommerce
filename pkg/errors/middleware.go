@@ -2,10 +2,12 @@ package errors
 
 import (
 	"fmt"
+	"runtime"
+
 	"github.com/labstack/echo/v4"
+
 	"github.com/smiletrl/micro_ecommerce/pkg/constants"
 	"github.com/smiletrl/micro_ecommerce/pkg/logger"
-	"runtime"
 )
 
 func Middleware(logger logger.Provider) echo.MiddlewareFunc {
