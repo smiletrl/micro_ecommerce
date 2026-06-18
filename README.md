@@ -151,7 +151,6 @@ github.com/smiletrl/micro_service
 |-- service.payment
 |-- service.product
 |-- testdata
-|-- vendor
 |-- .gitignore
 |-- database.yml
 |-- go.mod

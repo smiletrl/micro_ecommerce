@@ -1,7 +1,0 @@
-.idea
-go.mod
-go.sum
-vendor/
-coverage.txt
-examples/test
-/.vscode
